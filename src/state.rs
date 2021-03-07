@@ -56,15 +56,16 @@ impl GameState for State {
 fn exec_all_systems(gs: &mut State) {
     if gs.proc {
         //Execute the systems and shit
-
+        process_fov(&mut gs.world.objects, &mut gs.world.map);
         if gs.passed_turn {
             gs.turn_state == TurnState::AI;
             gs.passed_turn = false;
-            //Don't forget to run FOV here
+            process_fov(&mut gs.world.objects, &mut gs.world.map);
         }
 
         if gs.turn_state == TurnState::AI {
             //Do all the ai stuff
+            process_fov(&mut gs.world.objects, &mut gs.world.map);
             gs.turn_state = TurnState::Player;
         }
 
@@ -92,7 +93,7 @@ impl World {
     }
     pub fn new_game() -> World {
         let mut rng = RandomNumberGenerator::new();
-        let map = cellular_automata_builder(120, 120, true);
+        let map = cellular_automata_builder(50, 50, false);
         let starting_pos = map.starting_pos.clone();
 
         let mut world = World {

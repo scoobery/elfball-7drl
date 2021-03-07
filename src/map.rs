@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use std::thread::spawn;
 
 #[derive(Clone,Copy,PartialEq)]
 pub enum TileClass {
@@ -28,7 +27,7 @@ impl Map {
             starting_pos: Point::zero(),
             exit_pos: Point::zero(),
             tiles: vec![TileClass::Tree; (w * h) as usize],
-            visible: vec![true; (w * h) as usize],
+            visible: vec![false; (w * h) as usize],
             revealed: vec![false; (w * h) as usize],
             obj_blocked: vec![false; (w * h) as usize],
         }
@@ -117,10 +116,12 @@ pub fn cellular_automata_builder(w: i32, h: i32, start_mid: bool) -> Map {
         let dijkstra_map = DijkstraMap::new(map.width, map.height, &start_idx, &map, 1024.0);
         let mut spawn_tile = (0, 0.0f32);
         for (i, tile) in map.tiles.iter_mut().enumerate() {
-            let distance = dijkstra_map.map[i];
-            if distance > spawn_tile.1 {
-                spawn_tile.0 = i;
-                spawn_tile.1 = distance;
+            if *tile == TileClass::ForestFloor {
+                let distance = dijkstra_map.map[i];
+                if distance > spawn_tile.1 {
+                    spawn_tile.0 = i;
+                    spawn_tile.1 = distance;
+                }
             }
         }
         map.starting_pos = map.index_to_point2d(spawn_tile.0);

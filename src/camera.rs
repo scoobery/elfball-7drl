@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub const UI_CUTOFF: Point = Point { x: 36, y: 20 };
+pub const UI_CUTOFF: Point = Point { x: 40, y: 25 };
 
 pub struct Camera {
     pub min_x: i32,

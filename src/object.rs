@@ -3,6 +3,7 @@ use crate::prelude::*;
 pub struct Object {
     pub name: String,
     pub floor: u32,
+    pub tag: ActorTag,
     pub pos: Option<Point>,
     pub render: Option<Render>,
     pub viewshed: Option<Viewshed>,
@@ -13,6 +14,7 @@ impl Default for Object {
         Object {
             name: String::from("Nil"),
             floor: 0,
+            tag: ActorTag::NonActor,
             pos: None,
             render: None,
             viewshed: None,
@@ -22,6 +24,11 @@ impl Default for Object {
 }
 
 //Component Definitions
+#[derive(Clone, Copy, PartialEq)]
+pub enum ActorTag {
+    NonActor, Player, Enemy, Static
+}
+
 pub struct Render {
     glyph: FontCharType,
     color: ColorPair,

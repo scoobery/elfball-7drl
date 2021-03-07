@@ -7,6 +7,7 @@ mod input;
 mod spawns;
 mod party;
 mod actions;
+mod systems;
 
 mod prelude {
     pub use bracket_lib::prelude::*;
@@ -19,6 +20,7 @@ mod prelude {
     pub use crate::spawns::*;
     pub use crate::party::*;
     pub use crate::actions::*;
+    pub use crate::systems::*;
     use std::cmp::Reverse;
 
     pub const CONSOLE_W: i32 = 80;
