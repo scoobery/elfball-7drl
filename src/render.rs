@@ -92,11 +92,13 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
 fn batch_ui_draws() {
     let mut bg_batch = DrawBatch::new();
     let mut txt_batch = DrawBatch::new();
-    bg_batch.target(BACK_CON);
+    bg_batch.target(MAP_CON);
     txt_batch.target(TEXT_CON);
 
     let ui_box: Rect = Rect::with_size(CONSOLE_W + 1 - UI_CUTOFF.x, 0, UI_CUTOFF.x - 2, CONSOLE_H - 1);
+    let log_box: Rect = Rect::with_size(0, CONSOLE_H - UI_CUTOFF.y, CONSOLE_W - UI_CUTOFF.x, UI_CUTOFF.y - 1);
     bg_batch.draw_double_box(ui_box, ColorPair::new(GREY50, BLACK));
+    bg_batch.draw_double_box(log_box, ColorPair::new(GREY50, BLACK));
     txt_batch.print(Point::new(ui_box.x1 * 2 + 2, 1), "Elfball");
 
     bg_batch.submit(10000).expect("Failed to batch UI draw");

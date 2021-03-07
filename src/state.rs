@@ -93,7 +93,7 @@ impl World {
     }
     pub fn new_game() -> World {
         let mut rng = RandomNumberGenerator::new();
-        let map = cellular_automata_builder(50, 50, false);
+        let map = cellular_automata_builder(80,80, true);
         let starting_pos = map.starting_pos.clone();
 
         let mut world = World {

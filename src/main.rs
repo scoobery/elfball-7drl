@@ -26,9 +26,8 @@ mod prelude {
     pub const CONSOLE_W: i32 = 80;
     pub const CONSOLE_H: i32 = 60;
 
-    pub const BACK_CON: usize = 0;
-    pub const MAP_CON: usize = 1;
-    pub const TEXT_CON: usize = 2;
+    pub const MAP_CON: usize = 0;
+    pub const TEXT_CON: usize = 1;
 
     //Constant point values used as directional indicators
     pub const DL_LEFT: Point = Point { x: -1, y: 0 };
@@ -95,10 +94,8 @@ fn build_console(w: i32, h: i32) -> BTerm {
         .with_tile_dimensions(16, 16)
         .with_dimensions(w / 16, h / 16)
 
-        //Basic background console
-        .with_simple_console(CONSOLE_W, CONSOLE_H, "map.png")
         //Console for map rendering
-        .with_sparse_console(CONSOLE_W, CONSOLE_H, "map.png")
+        .with_simple_console(CONSOLE_W, CONSOLE_H, "map.png")
         //Text Console
         .with_sparse_console(CONSOLE_W * 2, CONSOLE_H, "text.png")
 
