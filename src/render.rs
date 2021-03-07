@@ -100,7 +100,15 @@ fn batch_ui_draws(logs: &LogBuffer) {
 
     bg_batch.draw_double_box(ui_box, ColorPair::new(GREY50, BLACK));
     bg_batch.draw_double_box(log_box, ColorPair::new(GREY50, BLACK));
-    txt_batch.print(Point::new(ui_box.x1 * 2 + 2, 1), "Elfball");
+
+    txt_batch.fill_region(Rect::with_size(ui_box.x1 * 2 + 2, 1, (ui_box.width() * 2) - 3, 0), ColorPair::new(LIME_GREEN,BLACK), 219);
+    txt_batch.print_color(Point::new(ui_box.x1 * 2 + 4, 1), "Party", ColorPair::new(BLACK, LIME_GREEN));
+
+    txt_batch.fill_region(Rect::with_size(ui_box.x1 * 2 + 2, 21, (ui_box.width() * 2) - 3, 0), ColorPair::new(RED,BLACK), 219);
+    txt_batch.print_color(Point::new(ui_box.x1 * 2 + 4, 21), "Combat", ColorPair::new(BLACK, RED));
+
+    txt_batch.fill_region(Rect::with_size(ui_box.x1 * 2 + 2, 41, (ui_box.width() * 2) - 3, 0), ColorPair::new(GOLD,BLACK), 219);
+    txt_batch.print_color(Point::new(ui_box.x1 * 2 + 4, 41), "Abilities", ColorPair::new(BLACK, GOLD));
 
     let mut tb = TextBlock::new(LOG_BOX.x1 * 2, LOG_BOX.y1, LOG_BOX.width() * 2, LOG_BOX.height());
     tb.print(&logs.format());
