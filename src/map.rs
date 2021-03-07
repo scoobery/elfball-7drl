@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 #[derive(Clone,Copy,PartialEq)]
 pub enum TileClass {
-    Tree, ForestFloor
+    Tree, ForestFloor, ForestPortal
 }
 impl TileClass {
     pub fn does_collide(&self) -> bool { return *self == TileClass::Tree }
@@ -14,6 +14,7 @@ pub struct Map {
     pub height: i32,
     pub starting_pos: Point,
     pub exit_pos: Point,
+    pub starting_area: BresenhamCircle,
     pub tiles: Vec<TileClass>,
     pub visible: Vec<bool>,
     pub revealed: Vec<bool>,
@@ -26,6 +27,7 @@ impl Map {
             height: h,
             starting_pos: Point::zero(),
             exit_pos: Point::zero(),
+            starting_area: BresenhamCircle::new(Point::zero(),0),
             tiles: vec![TileClass::Tree; (w * h) as usize],
             visible: vec![false; (w * h) as usize],
             revealed: vec![false; (w * h) as usize],
@@ -63,6 +65,21 @@ impl Map {
 
 impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool { return self.tiles[idx] != TileClass::ForestFloor }
+    fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize,f32); 10]> {
+        let mut exits = SmallVec::new();
+        let pos = self.index_to_point2d(idx);
+
+        if let Some(idx) = self.valid_exit(pos, DL_LEFT) { exits.push((idx, 1.0)) }
+        if let Some(idx) = self.valid_exit(pos, DL_RIGHT) { exits.push((idx, 1.0)) }
+        if let Some(idx) = self.valid_exit(pos, DL_UP) { exits.push((idx, 1.0)) }
+        if let Some(idx) = self.valid_exit(pos, DL_DOWN) { exits.push((idx, 1.0)) }
+        if let Some(idx) = self.valid_exit(pos, DL_UP + DL_LEFT) { exits.push((idx, 1.45)) }
+        if let Some(idx) = self.valid_exit(pos, DL_DOWN + DL_LEFT) { exits.push((idx, 1.45)) }
+        if let Some(idx) = self.valid_exit(pos, DL_UP + DL_RIGHT) { exits.push((idx, 1.45)) }
+        if let Some(idx) = self.valid_exit(pos, DL_DOWN + DL_RIGHT) { exits.push((idx, 1.45)) }
+
+        return exits
+    }
 }
 impl Algorithm2D for Map {
     fn dimensions(&self) -> Point { Point::new(self.width, self.height) }
@@ -112,20 +129,18 @@ pub fn cellular_automata_builder(w: i32, h: i32, start_mid: bool) -> Map {
     }
     //Otherwise, start at the furthest point from the middle
     else {
-        let start_idx = vec![map.point2d_to_index(Point::new(map.width/2, map.height/2))];
-        let dijkstra_map = DijkstraMap::new(map.width, map.height, &start_idx, &map, 1024.0);
-        let mut spawn_tile = (0, 0.0f32);
-        for (i, tile) in map.tiles.iter_mut().enumerate() {
-            if *tile == TileClass::ForestFloor {
-                let distance = dijkstra_map.map[i];
-                if distance > spawn_tile.1 {
-                    spawn_tile.0 = i;
-                    spawn_tile.1 = distance;
-                }
-            }
-        }
-        map.starting_pos = map.index_to_point2d(spawn_tile.0);
+        let start_pt = Point::new(map.width/2, map.height/2);
+        map.starting_pos = find_furthest_point(&mut map, &start_pt);
     }
+
+    //Set the starting area on the map
+    map.starting_area = BresenhamCircle::new(map.starting_pos, 12);
+
+    //Set up where the exit portal will be located
+    let start_pt = map.starting_pos.clone();
+    map.exit_pos = find_furthest_point(&mut map, &start_pt);
+    let exit_idx = map.point2d_to_index(map.exit_pos);
+    map.tiles[exit_idx] = TileClass::ForestPortal;
 
     return map
 }
@@ -140,4 +155,18 @@ fn get_neighbors_count(map: &Map, idx: usize) -> u8 {
     if map.tiles[idx - (map.width as usize + 1)] == TileClass::Tree { final_val += 1 }
     if map.tiles[idx + (map.width as usize + 1)] == TileClass::Tree { final_val += 1 }
     return final_val
+}
+
+fn find_furthest_point(map: &mut Map, pos: &Point) -> Point {
+    let start_idx = vec![map.point2d_to_index(*pos)];
+    let dijkstra_map = DijkstraMap::new(map.width, map.height, &start_idx, map, 8192.0);
+
+    let start_tile = dijkstra_map.map
+        .iter()
+        .enumerate()
+        .filter(|(_,dist)| *dist < &std::f32::MAX)
+        .max_by(|a,b| a.1.partial_cmp(b.1).unwrap())
+        .unwrap().0;
+
+    return map.index_to_point2d(start_tile)
 }

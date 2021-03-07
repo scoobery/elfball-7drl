@@ -109,5 +109,6 @@ fn get_tile_render(tile: &TileClass) -> (FontCharType, ColorPair) {
     match tile {
         TileClass::ForestFloor => (46, ColorPair::new(BROWN1,BLACK)),
         TileClass::Tree => (5, ColorPair::new(GREEN,BLACK)),
+        TileClass::ForestPortal => (21, ColorPair::new(CYAN,BLACK)),
     }
 }
