@@ -4,6 +4,9 @@ mod camera;
 mod render;
 mod object;
 mod input;
+mod spawns;
+mod party;
+mod actions;
 
 mod prelude {
     pub use bracket_lib::prelude::*;
@@ -13,6 +16,10 @@ mod prelude {
     pub use crate::render::*;
     pub use crate::object::*;
     pub use crate::input::*;
+    pub use crate::spawns::*;
+    pub use crate::party::*;
+    pub use crate::actions::*;
+    use std::cmp::Reverse;
 
     pub const CONSOLE_W: i32 = 80;
     pub const CONSOLE_H: i32 = 60;
@@ -20,6 +27,48 @@ mod prelude {
     pub const BACK_CON: usize = 0;
     pub const MAP_CON: usize = 1;
     pub const TEXT_CON: usize = 2;
+
+    //Constant point values used as directional indicators
+    pub const DL_LEFT: Point = Point { x: -1, y: 0 };
+    pub const DL_RIGHT: Point = Point { x: 1, y: 0 };
+    pub const DL_UP: Point = Point { x: 0, y: -1 };
+    pub const DL_DOWN: Point = Point { x: 0, y: 1 };
+
+    //Type alias for a vec of array indices and initiative values
+    pub type InitList = Vec<(usize, u8)>;
+
+    pub trait InitListTrait {
+        fn add_object(&mut self, id: usize, init: u8);
+        fn sort(&mut self);
+    }
+    impl InitListTrait for InitList {
+        //Adds a new object to the list
+        fn add_object(&mut self, id: usize, init: u8) {
+            self.push((id, init));
+        }
+        //Sorts by descending initiative order
+        fn sort(&mut self) {
+            self.sort_by_key(|a| Reverse(a.1));
+        }
+    }
+
+    pub trait Neighbor {
+        fn get_neighbors(&self) -> Vec<Point>;
+    }
+    impl Neighbor for Point {
+        fn get_neighbors(&self) -> Vec<Point> {
+            return vec![
+                *self + DL_UP,
+                *self + DL_DOWN,
+                *self + DL_LEFT,
+                *self + DL_RIGHT,
+                *self + DL_UP + DL_LEFT,
+                *self + DL_UP + DL_RIGHT,
+                *self + DL_DOWN + DL_LEFT,
+                *self + DL_DOWN + DL_RIGHT
+            ]
+        }
+    }
 }
 use crate::prelude::*;
 
