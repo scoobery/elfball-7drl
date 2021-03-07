@@ -15,18 +15,33 @@ pub struct State {
     pub passed_turn: bool,
     pub status: ContextState,
     pub turn_state: TurnState,
-    pub world: World
+    pub world: World,
+    pub logs: LogBuffer
 }
 impl State {
     pub fn init() -> State {
-        State {
-            proc: true,
-            refresh: true,
-            passed_turn: false,
-            status: ContextState::InGame,
-            turn_state: TurnState::Player,
-            world: World::new_game()
-        }
+       let mut logs = LogBuffer::new();
+       logs.update_logs(LogMessage::new()
+           .add_part("Your ancestors have called upon you to save these lands from the bestial scourge they are beset against.", ColorPair::new(WHITE, GREY10))
+           .add_part("Gather more", ColorPair::new(WHITE, GREY10))
+           .add_part("Elves (☻)", ColorPair::new(LIME_GREEN, GREY10))
+           .add_part("to expand your party of woodland defenders.", ColorPair::new(WHITE, GREY10))
+           .add_part("Beware of", ColorPair::new(WHITE, GREY10))
+           .add_part("Beasts (b)", ColorPair::new(RED, GREY10))
+           .add_part("that stalk these woods, and", ColorPair::new(WHITE, GREY10))
+           .add_part("the Forsaken (☺),", ColorPair::new(PURPLE, GREY10))
+           .add_part("your fallen bretheren. Good luck...", ColorPair::new(WHITE, GREY10))
+       );
+
+       State {
+           proc: true,
+           refresh: true,
+           passed_turn: false,
+           status: ContextState::InGame,
+           turn_state: TurnState::Player,
+           world: World::new_game(),
+           logs
+       }
     }
     pub fn set_proc(&mut self) { self.proc = true }
     pub fn set_refresh(&mut self) { self.refresh = true }

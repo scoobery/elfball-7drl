@@ -10,7 +10,7 @@ pub fn render_loop(gs: &State, con: &mut BTerm) {
         ContextState::InGame => {
             batch_map_draws(&gs.world.map, &gs.world.camera);
             batch_entity_draws(&gs.world.objects, &gs.world.map, &gs.world.camera, gs.world.depth);
-            batch_ui_draws();
+            batch_ui_draws(&gs.logs);
         }
     }
     render_draw_buffer(con).expect("Failed to render");
@@ -89,7 +89,7 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
     batch.submit(5000).expect("Failed to batch entity draw");
 }
 
-fn batch_ui_draws() {
+fn batch_ui_draws(logs: &LogBuffer) {
     let mut bg_batch = DrawBatch::new();
     let mut txt_batch = DrawBatch::new();
     bg_batch.target(MAP_CON);
@@ -97,9 +97,14 @@ fn batch_ui_draws() {
 
     let ui_box: Rect = Rect::with_size(CONSOLE_W + 1 - UI_CUTOFF.x, 0, UI_CUTOFF.x - 2, CONSOLE_H - 1);
     let log_box: Rect = Rect::with_size(0, CONSOLE_H - UI_CUTOFF.y, CONSOLE_W - UI_CUTOFF.x, UI_CUTOFF.y - 1);
+
     bg_batch.draw_double_box(ui_box, ColorPair::new(GREY50, BLACK));
     bg_batch.draw_double_box(log_box, ColorPair::new(GREY50, BLACK));
     txt_batch.print(Point::new(ui_box.x1 * 2 + 2, 1), "Elfball");
+
+    let mut tb = TextBlock::new(LOG_BOX.x1 * 2, LOG_BOX.y1, LOG_BOX.width() * 2, LOG_BOX.height());
+    tb.print(&logs.format());
+    tb.render_to_draw_batch(&mut txt_batch);
 
     bg_batch.submit(10000).expect("Failed to batch UI draw");
     txt_batch.submit(11000).expect("Failed to batch UI draw");
