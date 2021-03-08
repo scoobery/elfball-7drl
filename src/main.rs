@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 mod state;
 mod map;
 mod camera;

@@ -7,13 +7,14 @@ pub fn spawn_player(pos: Point) -> Object {
         tag: ActorTag::Player,
         pos: Some(pos),
         render: Some(Render::new(64, ColorPair::new(GOLD1, BLACK), 255)),
-        viewshed: Some(Viewshed { range: 6, visible: Vec::new(), refresh: true }),
-        members: Some(vec![make_hero()]),
+        viewshed: Some(Viewshed { range: 10, visible: Vec::new(), refresh: true }),
+        members: vec![make_hero()],
         ..Default::default()
     }
 }
 
 pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
+    let num_enemies = rng.range(f, 4 + f);
     Object {
         name: String::from("Forsaken Warriors"),
         floor: f,
@@ -21,7 +22,7 @@ pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u3
         pos: Some(pos),
         render: Some(Render::new(1, ColorPair::new(PURPLE,BLACK), 255)),
         viewshed: Some(Viewshed { range: 6, visible: Vec::new(), refresh: true }),
-        members: Some(vec![enemy_make_forsaken_warrior(), enemy_make_forsaken_warrior(), enemy_make_forsaken_warrior()]),
+        members: vec![enemy_make_forsaken_warrior(); num_enemies as usize],
         ..Default::default()
     }
 }
@@ -29,8 +30,8 @@ pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u3
 //Party Member definitions
 pub fn make_hero() -> PartyMember {
     PartyMember {
-        name: String::from("Elvish Hero"),
-        class: String::from("Ranger"),
+        name: format!("{}, Elvish Champion", make_random_elf_name()),
+        class: String::from("Warrior"),
         icon: Render::new(2, ColorPair::new(GOLD,BLACK), 255),
         abilities: vec![Ability::Attack, Ability::RallyingCry],
         health: Health::new(20),
@@ -41,7 +42,7 @@ pub fn make_hero() -> PartyMember {
 }
 pub fn make_guardian() -> PartyMember {
     PartyMember {
-        name: String::from("Elvish Guardian"),
+        name: format!("{} the Guardian", make_random_elf_name()),
         class: String::from("Warrior"),
         icon: Render::new(2, ColorPair::new(STEEL_BLUE,BLACK), 255),
         abilities: vec![Ability::Attack, Ability::Taunt],

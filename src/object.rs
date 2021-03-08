@@ -11,8 +11,9 @@ pub struct Object {
     pub viewshed: Option<Viewshed>,
 
     pub player_mem: PlayerMemory,
+    pub inc_attacks: Vec<TargetedAttack>,
 
-    pub members: Option<Vec<PartyMember>>
+    pub members: Vec<PartyMember>
 }
 impl Default for Object {
     fn default() -> Self {
@@ -25,7 +26,8 @@ impl Default for Object {
             render: None,
             viewshed: None,
             player_mem: PlayerMemory::default(),
-            members: None,
+            inc_attacks: Vec::new(),
+            members: Vec::new(),
         }
     }
 }
@@ -36,6 +38,7 @@ pub enum ActorTag {
     NonActor, Player, Enemy, Static
 }
 
+#[derive(Clone)]
 pub struct Render {
     glyph: FontCharType,
     color: ColorPair,

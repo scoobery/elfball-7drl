@@ -70,7 +70,9 @@ impl Map {
         for y in 1 ..= self.height - 1 {
             for x in 1 ..= self.width - 1 {
                 let pt = Point::new(x,y);
-                if self.walkable(pt) && !self.starting_area.contains(&pt) { points.push(pt) }
+                if self.walkable(pt) {
+                    if !self.starting_area.contains(&pt) { points.push(pt) }
+                }
             }
         }
 
@@ -149,7 +151,8 @@ pub fn cellular_automata_builder(w: i32, h: i32, start_mid: bool) -> Map {
     }
 
     //Set the starting area on the map
-    BresenhamCircle::new(map.starting_pos, 12).for_each(|p| { map.starting_area.push(p); });
+    BresenhamCircle::new(map.starting_pos, 10).for_each(|p| { map.starting_area.push(p); });
+    map.get_valid_spawn_points();
 
     //Set up where the exit portal will be located
     let start_pt = map.starting_pos.clone();
@@ -157,7 +160,6 @@ pub fn cellular_automata_builder(w: i32, h: i32, start_mid: bool) -> Map {
     let exit_idx = map.point2d_to_index(map.exit_pos);
     map.tiles[exit_idx] = TileClass::ForestPortal;
 
-    map.get_valid_spawn_points();
     return map
 }
 fn get_neighbors_count(map: &Map, idx: usize) -> u8 {

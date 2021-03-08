@@ -114,15 +114,16 @@ impl World {
     pub fn new_game() -> World {
         let mut rng = RandomNumberGenerator::new();
         let mut objects = Vec::new();
-        let map = cellular_automata_builder(80,80, true);
+        let mut map = cellular_automata_builder(80,80, true);
         let camera = Camera::new(map.starting_pos.clone());
         objects.push(spawn_player(map.starting_pos.clone()));
 
-        let max_roll = map.valid_spawns.len() - 1;
-        for _ in 1..=16 {
+        for _ in 1..=24 {
+            let max_roll = map.valid_spawns.len() - 1;
             let index = rng.range(0, max_roll);
             let pos = map.valid_spawns[index].clone();
             objects.push(spawn_band_of_forsaken(&mut rng, pos, 1));
+            map.valid_spawns.remove(index);
         }
 
         let mut world = World {
