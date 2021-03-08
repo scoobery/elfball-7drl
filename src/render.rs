@@ -60,9 +60,8 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
             if pos.x > camera.min_x && pos.x < camera.max_x && pos.y > camera.min_y && pos.y < camera.max_y && object.floor == floor {
                 if map.visible[idx] {
                     render_list.push((object, true))
-                //UNCOMMENT THIS LATER WHEN I IMPLEMENT PLAYER MEMORY AGAIN!!!
-                //} else if map.revealed[idx] && object.player_mem.seen {
-                //    render_list.push((object, false))
+                } else if map.revealed[idx] && object.player_mem.seen {
+                    render_list.push((object, false))
                 }
             }
         }
@@ -77,13 +76,11 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
             pos = obj.0.pos.unwrap();
             batch.set(pos - offset, color, glyph);
         }
-        /* ALSO UNCOMMENT THIS WHEN I IMPLEMENT PLAYER MEMORY AGAIN
         else {
             pos = obj.0.player_mem.last_pos.unwrap();
             color = ColorPair::new(GREY30, BLACK);
             batch.set(pos - offset, color, glyph);
         }
-        */
     }
 
     batch.submit(5000).expect("Failed to batch entity draw");

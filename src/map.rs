@@ -14,11 +14,12 @@ pub struct Map {
     pub height: i32,
     pub starting_pos: Point,
     pub exit_pos: Point,
-    pub starting_area: BresenhamCircle,
+    pub starting_area: Vec<Point>,
     pub tiles: Vec<TileClass>,
     pub visible: Vec<bool>,
     pub revealed: Vec<bool>,
-    pub obj_blocked: Vec<bool>
+    pub obj_blocked: Vec<bool>,
+    pub valid_spawns: Vec<Point>
 }
 impl Map {
     pub fn new(w: i32, h: i32) -> Map {
@@ -27,11 +28,12 @@ impl Map {
             height: h,
             starting_pos: Point::zero(),
             exit_pos: Point::zero(),
-            starting_area: BresenhamCircle::new(Point::zero(),0),
+            starting_area: Vec::new(),
             tiles: vec![TileClass::Tree; (w * h) as usize],
             visible: vec![false; (w * h) as usize],
             revealed: vec![false; (w * h) as usize],
             obj_blocked: vec![false; (w * h) as usize],
+            valid_spawns: Vec::new()
         }
     }
 
@@ -60,6 +62,19 @@ impl Map {
         else {
             return None
         }
+    }
+
+    pub fn get_valid_spawn_points(&mut self) {
+        let mut points = Vec::new();
+
+        for y in 1 ..= self.height - 1 {
+            for x in 1 ..= self.width - 1 {
+                let pt = Point::new(x,y);
+                if self.walkable(pt) && !self.starting_area.contains(&pt) { points.push(pt) }
+            }
+        }
+
+        self.valid_spawns = points;
     }
 }
 
@@ -134,7 +149,7 @@ pub fn cellular_automata_builder(w: i32, h: i32, start_mid: bool) -> Map {
     }
 
     //Set the starting area on the map
-    map.starting_area = BresenhamCircle::new(map.starting_pos, 12);
+    BresenhamCircle::new(map.starting_pos, 12).for_each(|p| { map.starting_area.push(p); });
 
     //Set up where the exit portal will be located
     let start_pt = map.starting_pos.clone();
@@ -142,6 +157,7 @@ pub fn cellular_automata_builder(w: i32, h: i32, start_mid: bool) -> Map {
     let exit_idx = map.point2d_to_index(map.exit_pos);
     map.tiles[exit_idx] = TileClass::ForestPortal;
 
+    map.get_valid_spawn_points();
     return map
 }
 fn get_neighbors_count(map: &Map, idx: usize) -> u8 {
@@ -164,7 +180,7 @@ fn find_furthest_point(map: &mut Map, pos: &Point) -> Point {
     let start_tile = dijkstra_map.map
         .iter()
         .enumerate()
-        .filter(|(_,dist)| *dist < &std::f32::MAX)
+        .filter(|(_,dist)| *dist < &f32::MAX)
         .max_by(|a,b| a.1.partial_cmp(b.1).unwrap())
         .unwrap().0;
 

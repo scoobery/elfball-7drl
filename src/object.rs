@@ -3,10 +3,15 @@ use crate::prelude::*;
 pub struct Object {
     pub name: String,
     pub floor: u32,
+    pub block_tile: bool,
     pub tag: ActorTag,
+
     pub pos: Option<Point>,
     pub render: Option<Render>,
     pub viewshed: Option<Viewshed>,
+
+    pub player_mem: PlayerMemory,
+
     pub members: Option<Vec<PartyMember>>
 }
 impl Default for Object {
@@ -14,11 +19,13 @@ impl Default for Object {
         Object {
             name: String::from("Nil"),
             floor: 0,
+            block_tile: true,
             tag: ActorTag::NonActor,
             pos: None,
             render: None,
             viewshed: None,
-            members: None
+            player_mem: PlayerMemory::default(),
+            members: None,
         }
     }
 }
@@ -43,4 +50,12 @@ pub struct Viewshed {
     pub range: i32,
     pub visible: Vec<Point>,
     pub refresh: bool
+}
+
+pub struct PlayerMemory {
+    pub seen: bool,
+    pub last_pos: Option<Point>
+}
+impl Default for PlayerMemory {
+    fn default() -> Self { PlayerMemory { seen: false, last_pos: None } }
 }

@@ -8,10 +8,23 @@ pub fn spawn_player(pos: Point) -> Object {
         pos: Some(pos),
         render: Some(Render::new(64, ColorPair::new(GOLD1, BLACK), 255)),
         viewshed: Some(Viewshed { range: 6, visible: Vec::new(), refresh: true }),
+        members: Some(vec![make_hero()]),
         ..Default::default()
     }
 }
 
+pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
+    Object {
+        name: String::from("Forsaken Warriors"),
+        floor: f,
+        tag: ActorTag::Enemy,
+        pos: Some(pos),
+        render: Some(Render::new(1, ColorPair::new(PURPLE,BLACK), 255)),
+        viewshed: Some(Viewshed { range: 6, visible: Vec::new(), refresh: true }),
+        members: Some(vec![enemy_make_forsaken_warrior(), enemy_make_forsaken_warrior(), enemy_make_forsaken_warrior()]),
+        ..Default::default()
+    }
+}
 
 //Party Member definitions
 pub fn make_hero() -> PartyMember {

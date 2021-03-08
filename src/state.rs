@@ -72,6 +72,8 @@ fn exec_all_systems(gs: &mut State) {
     if gs.proc {
         //Execute the systems and shit
         process_fov(&mut gs.world.objects, &mut gs.world.map);
+        update_blocked_tiles(&mut gs.world.objects, &mut gs.world.map, gs.world.depth);
+
         if gs.passed_turn {
             gs.turn_state == TurnState::AI;
             gs.passed_turn = false;
@@ -81,8 +83,11 @@ fn exec_all_systems(gs: &mut State) {
         if gs.turn_state == TurnState::AI {
             //Do all the ai stuff
             process_fov(&mut gs.world.objects, &mut gs.world.map);
+            update_blocked_tiles(&mut gs.world.objects, &mut gs.world.map, gs.world.depth);
             gs.turn_state = TurnState::Player;
         }
+
+        update_player_memory(&mut gs.world.objects);
 
         gs.proc = false;
     }
@@ -108,18 +113,25 @@ impl World {
     }
     pub fn new_game() -> World {
         let mut rng = RandomNumberGenerator::new();
+        let mut objects = Vec::new();
         let map = cellular_automata_builder(80,80, true);
-        let starting_pos = map.starting_pos.clone();
+        let camera = Camera::new(map.starting_pos.clone());
+        objects.push(spawn_player(map.starting_pos.clone()));
+
+        let max_roll = map.valid_spawns.len() - 1;
+        for _ in 1..=16 {
+            let index = rng.range(0, max_roll);
+            let pos = map.valid_spawns[index].clone();
+            objects.push(spawn_band_of_forsaken(&mut rng, pos, 1));
+        }
 
         let mut world = World {
             rng,
-            objects: Vec::new(),
+            objects,
             map,
             depth: 1,
-            camera: Camera::new(starting_pos)
+            camera
         };
-
-        world.objects.push(spawn_player(starting_pos));
 
         return world
     }
