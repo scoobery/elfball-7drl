@@ -69,12 +69,12 @@ impl Map {
 
         for y in 1 ..= self.height - 1 {
             for x in 1 ..= self.width - 1 {
-                let pt = Point::new(x,y);
-                if self.walkable(pt) {
-                    if !self.starting_area.contains(&pt) { points.push(pt) }
-                }
+                points.push(Point::new(x,y));
             }
         }
+
+        points.retain(|p| !self.starting_area.contains(p));
+        points.retain(|p| self.walkable(*p));
 
         self.valid_spawns = points;
     }
@@ -151,7 +151,10 @@ pub fn cellular_automata_builder(w: i32, h: i32, start_mid: bool) -> Map {
     }
 
     //Set the starting area on the map
-    BresenhamCircle::new(map.starting_pos, 10).for_each(|p| { map.starting_area.push(p); });
+    for i in 1..=9 {
+        BresenhamCircle::new(map.starting_pos, i).for_each(|p| { map.starting_area.push(p); });
+    }
+    map.starting_area.dedup();
     map.get_valid_spawn_points();
 
     //Set up where the exit portal will be located

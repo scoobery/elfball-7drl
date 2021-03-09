@@ -7,7 +7,7 @@ pub fn spawn_player(pos: Point) -> Object {
         tag: ActorTag::Player,
         pos: Some(pos),
         render: Some(Render::new(64, ColorPair::new(GOLD1, BLACK), 255)),
-        viewshed: Some(Viewshed { range: 10, visible: Vec::new(), refresh: true }),
+        viewshed: Some(Viewshed { range: 6, visible: Vec::new(), refresh: true }),
         members: vec![make_hero()],
         ..Default::default()
     }
