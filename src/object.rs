@@ -35,7 +35,7 @@ impl Default for Object {
 //Component Definitions
 #[derive(Clone, Copy, PartialEq)]
 pub enum ActorTag {
-    NonActor, Player, Enemy, Static
+    NonActor, Player, Enemy, Elf
 }
 
 #[derive(Clone)]

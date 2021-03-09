@@ -27,6 +27,27 @@ pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u3
     }
 }
 
+pub fn spawn_elf_pickup(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
+    let diceroll = rng.roll_dice(1, 2);
+    let member = match diceroll {
+        1 => vec![make_hero()],
+        2 => vec![make_guardian()],
+        _ => Vec::new()
+    };
+
+    Object {
+        name: String::from("Lost Elf"),
+        floor: f,
+        block_tile: false,
+        tag: ActorTag::Elf,
+        pos: Some(pos),
+        render: Some(Render::new(2, ColorPair::new(DARK_GREEN, BLACK), 254)),
+        viewshed: None,
+        members: member,
+        ..Default::default()
+    }
+}
+
 //Party Member definitions
 pub fn make_hero() -> PartyMember {
     PartyMember {

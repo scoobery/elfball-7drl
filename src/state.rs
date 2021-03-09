@@ -13,6 +13,7 @@ pub struct State {
     proc: bool,
     refresh: bool,
     pub passed_turn: bool,
+    pub go_next_level: bool,
     pub status: ContextState,
     pub turn_state: TurnState,
     pub world: World,
@@ -37,6 +38,7 @@ impl State {
            proc: true,
            refresh: true,
            passed_turn: false,
+           go_next_level: false,
            status: ContextState::InGame,
            turn_state: TurnState::Player,
            world: World::new_game(),
@@ -73,6 +75,7 @@ fn exec_all_systems(gs: &mut State) {
         //Execute the systems and shit
         process_fov(&mut gs.world.objects, &mut gs.world.map);
         update_blocked_tiles(&mut gs.world.objects, &mut gs.world.map, gs.world.depth);
+        check_player_collisions(gs);
 
         if gs.passed_turn {
             gs.turn_state == TurnState::AI;
@@ -123,6 +126,14 @@ impl World {
             let index = rng.range(0, max_roll);
             let pos = map.valid_spawns[index].clone();
             objects.push(spawn_band_of_forsaken(&mut rng, pos, 1));
+            map.valid_spawns.remove(index);
+        }
+
+        for _ in 1..=10 {
+            let max_roll = map.valid_spawns.len() - 1;
+            let index = rng.range(0, max_roll);
+            let pos = map.valid_spawns[index].clone();
+            objects.push(spawn_elf_pickup(&mut rng, pos, 1));
             map.valid_spawns.remove(index);
         }
 
