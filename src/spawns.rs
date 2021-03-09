@@ -23,6 +23,7 @@ pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u3
         render: Some(Render::new(1, ColorPair::new(PURPLE,BLACK), 255)),
         viewshed: Some(Viewshed { range: 6, visible: Vec::new(), refresh: true }),
         members: vec![enemy_make_forsaken_warrior(); num_enemies as usize],
+        ai: Some(AIClass::new()),
         ..Default::default()
     }
 }

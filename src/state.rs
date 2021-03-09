@@ -14,6 +14,7 @@ pub struct State {
     refresh: bool,
     pub passed_turn: bool,
     pub go_next_level: bool,
+    pub player_death: bool,
     pub status: ContextState,
     pub turn_state: TurnState,
     pub world: World,
@@ -39,6 +40,7 @@ impl State {
            refresh: true,
            passed_turn: false,
            go_next_level: false,
+           player_death: false,
            status: ContextState::InGame,
            turn_state: TurnState::Player,
            world: World::new_game(),
@@ -74,25 +76,30 @@ fn exec_all_systems(gs: &mut State) {
     if gs.proc {
         //Execute the systems and shit
         process_fov(&mut gs.world.objects, &mut gs.world.map);
-        process_combat(&mut gs.world.objects, &mut gs.logs);
+        process_combat(&mut gs.world.objects, &mut gs.logs, &mut gs.player_death);
         update_blocked_tiles(&mut gs.world.objects, &mut gs.world.map, gs.world.depth);
         check_player_collisions(gs);
 
         if gs.passed_turn {
-            gs.turn_state == TurnState::AI;
+            gs.turn_state = TurnState::AI;
             gs.passed_turn = false;
             process_fov(&mut gs.world.objects, &mut gs.world.map);
         }
 
         if gs.turn_state == TurnState::AI {
-            //Do all the ai stuff
+            process_ai(&mut gs.world.objects, &mut gs.world.map, gs.world.depth, &mut gs.world.rng, &mut gs.logs);
             process_fov(&mut gs.world.objects, &mut gs.world.map);
-            process_combat(&mut gs.world.objects, &mut gs.logs);
+            process_combat(&mut gs.world.objects, &mut gs.logs, &mut gs.player_death);
             update_blocked_tiles(&mut gs.world.objects, &mut gs.world.map, gs.world.depth);
             gs.turn_state = TurnState::Player;
         }
 
         update_player_memory(&mut gs.world.objects);
+
+        if gs.player_death {
+            gs.turn_state = TurnState::GameOver;
+            println!("Game is done!");
+        }
 
         gs.proc = false;
     }

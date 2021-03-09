@@ -14,12 +14,14 @@ pub struct Object {
     pub in_combat: bool,
     pub inc_attacks: Vec<TargetedAttack>,
 
-    pub members: Vec<PartyMember>
+    pub members: Vec<PartyMember>,
+
+    pub ai: Option<AIClass>
 }
 impl Default for Object {
     fn default() -> Self {
         Object {
-            name: String::from("Nil"),
+            name: String::from("NIL"),
             floor: 0,
             block_tile: true,
             tag: ActorTag::NonActor,
@@ -30,6 +32,7 @@ impl Default for Object {
             inc_attacks: Vec::new(),
             in_combat: false,
             members: Vec::new(),
+            ai: None
         }
     }
 }

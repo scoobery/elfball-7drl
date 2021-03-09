@@ -191,7 +191,7 @@ fn find_furthest_point(map: &mut Map, pos: &Point) -> Point {
 
 fn bresenham_filled_circle_graph(pos: &Point, radius: i32) -> Vec<Point> {
     let mut points = Vec::new();
-    for i in 1..=radius {
+    for i in 0..=radius {
         BresenhamCircle::new(*pos, i).for_each(|p| { points.push(p); });
     }
     points.dedup();

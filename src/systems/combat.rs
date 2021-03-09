@@ -9,12 +9,22 @@ impl TargetedAttack {
     pub fn new(target: (usize, usize), damage: i32) -> TargetedAttack { TargetedAttack { target, damage } }
 }
 
-pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer) {
+pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_death: &mut bool) {
     let mut attack_list: Vec<(usize, TargetedAttack)> = Vec::new();
     let mut kill_list: Vec<(usize, usize)> = Vec::new();
 
     //Save the targeted attack and the ID of the object triggering it
     for (i,obj) in objects.iter_mut().enumerate() {
+        //Also determine if the parties should be gaining threat or resetting
+        let should_gain_threat = obj.in_combat;
+        for member in obj.members.iter_mut() {
+            if should_gain_threat {
+                member.threat.increment_threat();
+            } else {
+                member.threat.reset_threat();
+            }
+        }
+
         if !obj.inc_attacks.is_empty() {
             for a in obj.inc_attacks.iter() {
                 attack_list.push((i, a.clone()));
@@ -35,6 +45,7 @@ pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer) {
         }
     }
     //Kill anything that was added to the kill list
+    kill_list.dedup();
     for k in kill_list.iter() {
         let object_party = &mut objects[k.0].members;
 
@@ -55,7 +66,7 @@ pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer) {
                 objects.remove(k.0);
             }
             else {
-                //Put game over logic here
+                *player_death = true;
             }
         }
     }

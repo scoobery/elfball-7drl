@@ -10,6 +10,7 @@ mod party;
 mod actions;
 mod systems;
 mod logs;
+mod ai;
 
 mod prelude {
     pub use bracket_lib::prelude::*;
@@ -24,6 +25,8 @@ mod prelude {
     pub use crate::actions::*;
     pub use crate::systems::*;
     pub use crate::logs::*;
+    pub use crate::ai::*;
+
     use std::cmp::Reverse;
 
     pub const CONSOLE_W: i32 = 80;
