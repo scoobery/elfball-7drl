@@ -16,7 +16,7 @@ pub fn spawn_player(pos: Point) -> Object {
 pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
     let num_enemies = rng.range(f, 4 + f);
     Object {
-        name: String::from("Forsaken Warriors"),
+        name: String::from("band of Forsaken Warriors"),
         floor: f,
         tag: ActorTag::Enemy,
         pos: Some(pos),
@@ -41,7 +41,7 @@ pub fn spawn_elf_pickup(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> 
         block_tile: false,
         tag: ActorTag::Elf,
         pos: Some(pos),
-        render: Some(Render::new(2, ColorPair::new(DARK_GREEN, BLACK), 254)),
+        render: Some(Render::new(2, ColorPair::new(GOLD, BLACK), 254)),
         viewshed: None,
         members: member,
         ..Default::default()

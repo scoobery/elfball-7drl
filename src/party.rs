@@ -60,6 +60,7 @@ pub struct Attack {
 impl Attack {
     pub fn new(num: i32, d: i32) -> Attack { Attack { damage: (num,d), able_to_attack: true } }
     pub fn roll_for_damage(&self, rng: &mut RandomNumberGenerator) -> i32 { return rng.roll_dice(self.damage.0, self.damage.1) }
+    pub fn is_able(&self) -> bool { self.able_to_attack }
     pub fn disable_attack(&mut self) { self.able_to_attack = false }
     pub fn enable_attack(&mut self) { self.able_to_attack = true }
 }

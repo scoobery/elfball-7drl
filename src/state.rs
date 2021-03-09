@@ -74,6 +74,7 @@ fn exec_all_systems(gs: &mut State) {
     if gs.proc {
         //Execute the systems and shit
         process_fov(&mut gs.world.objects, &mut gs.world.map);
+        process_combat(&mut gs.world.objects, &mut gs.logs);
         update_blocked_tiles(&mut gs.world.objects, &mut gs.world.map, gs.world.depth);
         check_player_collisions(gs);
 
@@ -86,6 +87,7 @@ fn exec_all_systems(gs: &mut State) {
         if gs.turn_state == TurnState::AI {
             //Do all the ai stuff
             process_fov(&mut gs.world.objects, &mut gs.world.map);
+            process_combat(&mut gs.world.objects, &mut gs.logs);
             update_blocked_tiles(&mut gs.world.objects, &mut gs.world.map, gs.world.depth);
             gs.turn_state = TurnState::Player;
         }

@@ -14,7 +14,7 @@ pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer) {
     let mut kill_list: Vec<(usize, usize)> = Vec::new();
 
     //Save the targeted attack and the ID of the object triggering it
-    for (i,obj) in objects.iter().enumerate() {
+    for (i,obj) in objects.iter_mut().enumerate() {
         if !obj.inc_attacks.is_empty() {
             for a in obj.inc_attacks.iter() {
                 attack_list.push((i, a.clone()));
@@ -48,6 +48,10 @@ pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer) {
         //Remove the whole object if the party is empty (but also not the player)
         if object_party.is_empty() {
             if objects[k.0].tag != ActorTag::Player {
+                logs.update_logs(LogMessage::new()
+                    .add_part("You have defeated the", ColorPair::new(WHITE, GREY10))
+                    .add_part(format!("{}.", objects[k.0].name), ColorPair::new(objects[k.0].render.as_ref().unwrap().get_render().1.fg, GREY10))
+                );
                 objects.remove(k.0);
             }
             else {

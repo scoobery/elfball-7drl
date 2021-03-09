@@ -11,6 +11,7 @@ pub struct Object {
     pub viewshed: Option<Viewshed>,
 
     pub player_mem: PlayerMemory,
+    pub in_combat: bool,
     pub inc_attacks: Vec<TargetedAttack>,
 
     pub members: Vec<PartyMember>
@@ -27,6 +28,7 @@ impl Default for Object {
             viewshed: None,
             player_mem: PlayerMemory::default(),
             inc_attacks: Vec::new(),
+            in_combat: false,
             members: Vec::new(),
         }
     }

@@ -77,7 +77,25 @@ fn try_move_player(gs: &mut State, delta: Point) -> bool {
     return if player.pos.unwrap() == dest { true } else { try_attack_player(gs, &mut dest) }
 }
 
+//Attempts to attack something
 fn try_attack_player(gs: &mut State, dest: &mut Point) -> bool {
-    //Just returns false for now, no combat yet
-    return false
+    let (player, all) = gs.world.objects.split_at_mut(1);
+    let mut target: Option<&mut Object> = None;
+    let mut tgt_id: Option<usize> = None;
+
+    for (i, obj) in all.iter_mut().enumerate() {
+        if let Object { pos: Some(pos), tag: tag, .. } = obj {
+            if pos == dest && obj.floor == player[0].floor && tag == &mut ActorTag::Enemy {
+                target = Some(obj);
+                tgt_id = Some(i + 1);
+            }
+        }
+    }
+
+    return if let (Some(tgt), Some(id)) = (target, tgt_id) {
+        player[0].try_attack(tgt, id, &mut gs.world.rng, &mut gs.logs);
+        true
+    } else {
+        false
+    }
 }
