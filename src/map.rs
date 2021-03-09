@@ -151,10 +151,7 @@ pub fn cellular_automata_builder(w: i32, h: i32, start_mid: bool) -> Map {
     }
 
     //Set the starting area on the map
-    for i in 1..=9 {
-        BresenhamCircle::new(map.starting_pos, i).for_each(|p| { map.starting_area.push(p); });
-    }
-    map.starting_area.dedup();
+    map.starting_area = bresenham_filled_circle_graph(&map.starting_pos, 9).to_vec();
     map.get_valid_spawn_points();
 
     //Set up where the exit portal will be located
@@ -190,4 +187,13 @@ fn find_furthest_point(map: &mut Map, pos: &Point) -> Point {
         .unwrap().0;
 
     return map.index_to_point2d(start_tile)
+}
+
+fn bresenham_filled_circle_graph(pos: &Point, radius: i32) -> Vec<Point> {
+    let mut points = Vec::new();
+    for i in 1..=radius {
+        BresenhamCircle::new(*pos, i).for_each(|p| { points.push(p); });
+    }
+    points.dedup();
+    return points
 }
