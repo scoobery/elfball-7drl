@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use std::collections::HashSet;
 
 #[derive(Clone,Copy,PartialEq)]
 pub enum TileClass {
@@ -14,7 +15,7 @@ pub struct Map {
     pub height: i32,
     pub starting_pos: Point,
     pub exit_pos: Point,
-    pub starting_area: Vec<Point>,
+    pub starting_area: HashSet<Point>,
     pub tiles: Vec<TileClass>,
     pub visible: Vec<bool>,
     pub revealed: Vec<bool>,
@@ -28,7 +29,7 @@ impl Map {
             height: h,
             starting_pos: Point::zero(),
             exit_pos: Point::zero(),
-            starting_area: Vec::new(),
+            starting_area: HashSet::new(),
             tiles: vec![TileClass::Tree; (w * h) as usize],
             visible: vec![false; (w * h) as usize],
             revealed: vec![false; (w * h) as usize],
@@ -151,7 +152,7 @@ pub fn cellular_automata_builder(w: i32, h: i32, start_mid: bool) -> Map {
     }
 
     //Set the starting area on the map
-    map.starting_area = bresenham_filled_circle_graph(&map.starting_pos, 10).to_vec();
+    map.starting_area = Rect::with_size(&map.starting_pos.x - 4, &map.starting_pos.y - 4, 9, 9).point_set();
     map.get_valid_spawn_points();
 
     //Set up where the exit portal will be located
@@ -187,13 +188,4 @@ fn find_furthest_point(map: &mut Map, pos: &Point) -> Point {
         .unwrap().0;
 
     return map.index_to_point2d(start_tile)
-}
-
-fn bresenham_filled_circle_graph(pos: &Point, radius: i32) -> Vec<Point> {
-    let mut points = Vec::new();
-    for i in 0..=radius {
-        BresenhamCircle::new(*pos, i).for_each(|p| { points.push(p); });
-    }
-    points.dedup();
-    return points
 }
