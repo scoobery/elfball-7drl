@@ -147,7 +147,8 @@ fn batch_ui_draws(objects: &Vec<Object>, logs: &LogBuffer) {
             txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 2), format!("HP: {}/{}", member.health.get_life(), member.health.get_max()), health_color);
 
             let threat_color = get_threat_color(threat_table[i]);
-            txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), format!("Threat: {}", threat_table[i]), threat_color);
+            if threat_table[i] > 0 { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), format!("Threat: #{}", threat_table[i]), threat_color); }
+            else { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), "Threat: N/A", threat_color); }
         }
     }
     for sbox in combat_sub_boxes.iter() {
@@ -201,6 +202,7 @@ fn get_health_color(health: &Health) -> ColorPair {
 
 fn get_threat_color(threat: u16) -> ColorPair {
     return match threat {
+        0 => { ColorPair::new(GREY70, BLACK)}
         1 => { ColorPair::new(BLACK, ORANGE) },
         2 => { ColorPair::new(GOLD, BLACK) },
         3 => { ColorPair::new(GOLDENROD, BLACK) },
@@ -210,13 +212,14 @@ fn get_threat_color(threat: u16) -> ColorPair {
 
 fn make_threat_table(party: &Vec<PartyMember>) -> Vec<u16> {
     let mut ranked_table = vec![0; party.capacity()];
-    let mut threat_values: Vec<(usize, u32)> = Vec::new();
+    let threat_values: Vec<(usize, u32)> = {
+        let mut table = party.iter().enumerate()
+            .map(|(i, member)| (i, member.threat.get_threat()))
+            .collect::<Vec<(usize, u32)>>();
+        table.sort_by(|a,b| b.1.cmp(&a.1));
+        table
+    };
 
-    for (i, member) in party.iter().enumerate() {
-        threat_values.push((i, member.threat.get_threat()));
-    }
-
-    threat_values.sort_by(|a,b| b.1.cmp(&a.1));
     let mut rank: u16 = 1;
     for threat in threat_values.iter() {
         if threat.1 != 0 {

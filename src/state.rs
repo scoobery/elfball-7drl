@@ -32,7 +32,9 @@ impl State {
            .add_part("Beasts (b)", ColorPair::new(RED, GREY10))
            .add_part("that stalk these woods, and", ColorPair::new(WHITE, GREY10))
            .add_part("the Forsaken (☺),", ColorPair::new(PURPLE, GREY10))
-           .add_part("your fallen bretheren. Good luck...", ColorPair::new(WHITE, GREY10))
+           .add_part("your fallen bretheren. Look for", ColorPair::new(WHITE, GREY10))
+           .add_part("Portals (§)", ColorPair::new(CYAN, GREY10))
+           .add_part("to travel to new parts of the forest. Good luck...", ColorPair::new(WHITE, GREY10))
        );
 
        State {
