@@ -28,6 +28,9 @@ fn basic_enemy_ai(enemy_id: usize, objects: &mut Vec<Object>, map: &Map, rng: &m
     if enemy.floor == player.floor {
         if let Object { viewshed: Some(view), ai: Some(ai), .. } = enemy {
             if view.visible.contains(&player_pos) && enemy.floor == player.floor {
+                enemy.in_combat = true;
+                player.in_combat = true;
+
                 ai.target = Some(0);
                 ai.state = AIState::Chasing;
                 ai.tgt_memory = 24;
@@ -49,12 +52,14 @@ fn basic_enemy_ai(enemy_id: usize, objects: &mut Vec<Object>, map: &Map, rng: &m
                     enemy.try_attack(player, 0, rng, logs);
                 } else if dest != pos { enemy.try_move(dest, map) }
             } else if ai.tgt_memory > 0 {
+                enemy.in_combat = false;
                 ai.state = AIState::Hunting;
                 ai.tgt_memory -= 1;
                 ai.tgt_heatmap.spread(pos, map);
                 let dest = ai.tgt_heatmap.get_closest_heat(map, pos);
                 if dest != pos { enemy.try_move(dest, map) }
             } else {
+                enemy.in_combat = false;
                 ai.target = None;
                 ai.state = AIState::Idle;
             }

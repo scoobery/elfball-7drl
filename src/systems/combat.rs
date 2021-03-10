@@ -70,4 +70,14 @@ pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_de
             }
         }
     }
+
+    //Mark off the player as no longer in combat if there are no enemies around them
+    let player_view = objects[0].viewshed.as_ref().unwrap().visible.to_vec();
+    let mut still_in_combat = false;
+    for obj in objects.iter() {
+        if player_view.contains(obj.pos.as_ref().unwrap()) && obj.tag == ActorTag::Enemy {
+            still_in_combat = true;
+        }
+    }
+    objects[0].in_combat = still_in_combat;
 }
