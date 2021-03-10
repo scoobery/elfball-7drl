@@ -52,8 +52,8 @@ pub fn spawn_elf_pickup(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> 
 //Party Member definitions
 pub fn make_hero() -> PartyMember {
     PartyMember {
-        name: format!("{}, Elvish Champion", make_random_elf_name()),
-        class: String::from("Warrior"),
+        name: format!("{}", make_random_elf_name()),
+        class: String::from("Hero"),
         icon: Render::new(2, ColorPair::new(GOLD,BLACK), 255),
         abilities: vec![Ability::Attack, Ability::RallyingCry],
         health: Health::new(50),
@@ -64,8 +64,8 @@ pub fn make_hero() -> PartyMember {
 }
 pub fn make_guardian() -> PartyMember {
     PartyMember {
-        name: format!("{} the Guardian", make_random_elf_name()),
-        class: String::from("Warrior"),
+        name: format!("{}", make_random_elf_name()),
+        class: String::from("Guardian"),
         icon: Render::new(2, ColorPair::new(STEEL_BLUE,BLACK), 255),
         abilities: vec![Ability::Attack, Ability::Taunt],
         health: Health::new(30),

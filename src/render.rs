@@ -134,10 +134,20 @@ fn batch_ui_draws(objects: &Vec<Object>, logs: &LogBuffer) {
     {
         let player_party = &objects[0].members;
 
+        let threat_table = make_threat_table(&player_party);
+
         for (i, member) in player_party.iter().enumerate() {
             let sbox = party_sub_boxes[i];
+            txt_batch.print_color(Point::new(sbox.x1, sbox.y1), ".............", ColorPair::new(GREY15, BLACK));
             txt_batch.print_color(Point::new(sbox.x1, sbox.y1), format!("{}", member.name), ColorPair::new(member.icon.get_render().1.fg, BLACK));
-            txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 1), format!("{}", to_char(member.icon.get_render().0 as u8)), ColorPair::new(member.icon.get_render().1.fg, BLACK));
+            txt_batch.print_color_right(Point::new(sbox.x2, sbox.y1), format!("{}", to_char(member.icon.get_render().0 as u8)), ColorPair::new(member.icon.get_render().1.fg, BLACK));
+            txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 1), format!("{}", member.class), ColorPair::new(WHITE, BLACK));
+
+            let health_color = get_health_color(&member.health);
+            txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 2), format!("HP: {}/{}", member.health.get_life(), member.health.get_max()), health_color);
+
+            let threat_color = get_threat_color(threat_table[i]);
+            txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), format!("Threat: {}", threat_table[i]), threat_color);
         }
     }
     for sbox in combat_sub_boxes.iter() {
@@ -176,4 +186,44 @@ fn get_divider_boxes(source_rect: &Rect) -> Vec<Rect> {
     }
 
     return boxes
+}
+
+fn get_health_color(health: &Health) -> ColorPair {
+    let percentage = (health.get_life() as f32 / health.get_max() as f32) * 100.0;
+
+    return match percentage {
+        (p) if p <= 25.0 => { ColorPair::new(RED, BLACK) },
+        (p) if p <= 50.0 => { ColorPair::new(ORANGE, BLACK) },
+        (p) if p <= 50.0 => { ColorPair::new(YELLOW, BLACK) },
+        _ => { ColorPair::new(LIME_GREEN, BLACK) }
+    }
+}
+
+fn get_threat_color(threat: u16) -> ColorPair {
+    return match threat {
+        1 => { ColorPair::new(BLACK, ORANGE) },
+        2 => { ColorPair::new(GOLD, BLACK) },
+        3 => { ColorPair::new(GOLDENROD, BLACK) },
+        _ => { ColorPair::new(WHITE, BLACK) }
+    }
+}
+
+fn make_threat_table(party: &Vec<PartyMember>) -> Vec<u16> {
+    let mut ranked_table = vec![0; party.capacity()];
+    let mut threat_values: Vec<(usize, u32)> = Vec::new();
+
+    for (i, member) in party.iter().enumerate() {
+        threat_values.push((i, member.threat.get_threat()));
+    }
+
+    threat_values.sort_by(|a,b| b.1.cmp(&a.1));
+    let mut rank: u16 = 1;
+    for threat in threat_values.iter() {
+        if threat.1 != 0 {
+            ranked_table[threat.0] = rank;
+            rank += 1;
+        }
+    }
+
+    return ranked_table
 }
