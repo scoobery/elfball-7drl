@@ -151,7 +151,7 @@ pub fn cellular_automata_builder(w: i32, h: i32, start_mid: bool) -> Map {
     }
 
     //Set the starting area on the map
-    map.starting_area = bresenham_filled_circle_graph(&map.starting_pos, 9).to_vec();
+    map.starting_area = bresenham_filled_circle_graph(&map.starting_pos, 10).to_vec();
     map.get_valid_spawn_points();
 
     //Set up where the exit portal will be located

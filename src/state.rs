@@ -68,12 +68,21 @@ impl GameState for State {
             render_loop(&self, con);
             self.refresh = false;
         }
+
+        if self.go_next_level {
+            self.go_next_level = false;
+            self.world.generate_new_map();
+            self.set_proc();
+            self.set_refresh();
+        }
     }
 }
 
 
 fn exec_all_systems(gs: &mut State) {
     if gs.proc {
+        gs.proc = false;
+
         //Execute the systems and shit
         process_fov(&mut gs.world.objects, &mut gs.world.map);
         process_combat(&mut gs.world.objects, &mut gs.logs, &mut gs.player_death);
@@ -100,8 +109,6 @@ fn exec_all_systems(gs: &mut State) {
             gs.turn_state = TurnState::GameOver;
             println!("Game is done!");
         }
-
-        gs.proc = false;
     }
 }
 
@@ -126,11 +133,11 @@ impl World {
     pub fn new_game() -> World {
         let mut rng = RandomNumberGenerator::new();
         let mut objects = Vec::new();
-        let mut map = cellular_automata_builder(80,80, true);
+        let mut map = cellular_automata_builder(64,64, true);
         let camera = Camera::new(map.starting_pos.clone());
         objects.push(spawn_player(map.starting_pos.clone()));
 
-        for _ in 1..=24 {
+        for _ in 1..=12 {
             let max_roll = map.valid_spawns.len() - 1;
             let index = rng.range(0, max_roll);
             let pos = map.valid_spawns[index].clone();
@@ -138,7 +145,7 @@ impl World {
             map.valid_spawns.remove(index);
         }
 
-        for _ in 1..=10 {
+        for _ in 1..=3 {
             let max_roll = map.valid_spawns.len() - 1;
             let index = rng.range(0, max_roll);
             let pos = map.valid_spawns[index].clone();
@@ -155,5 +162,34 @@ impl World {
         };
 
         return world
+    }
+
+    pub fn generate_new_map(&mut self) {
+        self.objects.retain(|o| o.tag == ActorTag::Player);
+        self.depth += 1;
+        let mut new_map = cellular_automata_builder(64,64, true);
+
+        self.camera = Camera::new(new_map.starting_pos.clone());
+        self.objects[0].pos = Some(new_map.starting_pos.clone());
+        self.objects[0].viewshed.as_mut().unwrap().refresh = true;
+        self.objects[0].floor = self.depth;
+
+        for _ in 1..=10 + (2 * self.depth) {
+            let max_roll = new_map.valid_spawns.len() - 1;
+            let index = self.rng.range(0, max_roll);
+            let pos = new_map.valid_spawns[index].clone();
+            self.objects.push(spawn_band_of_forsaken(&mut self.rng, pos, self.depth));
+            new_map.valid_spawns.remove(index);
+        }
+
+        for _ in 1..=3 {
+            let max_roll = new_map.valid_spawns.len() - 1;
+            let index = self.rng.range(0, max_roll);
+            let pos = new_map.valid_spawns[index].clone();
+            self.objects.push(spawn_elf_pickup(&mut self.rng, pos, self.depth));
+            new_map.valid_spawns.remove(index);
+        }
+
+        self.map = new_map;
     }
 }

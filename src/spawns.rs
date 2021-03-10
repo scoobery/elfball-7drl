@@ -14,7 +14,7 @@ pub fn spawn_player(pos: Point) -> Object {
 }
 
 pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
-    let num_enemies = rng.range(f, 4 + f);
+    let num_enemies = rng.range(f, 2 * f);
     Object {
         name: String::from("band of Forsaken Warriors"),
         floor: f,
@@ -56,8 +56,8 @@ pub fn make_hero() -> PartyMember {
         class: String::from("Warrior"),
         icon: Render::new(2, ColorPair::new(GOLD,BLACK), 255),
         abilities: vec![Ability::Attack, Ability::RallyingCry],
-        health: Health::new(20),
-        attack: Attack::new(1,6),
+        health: Health::new(50),
+        attack: Attack::new(2,3),
         threat: Threat::new(6),
         modifiers: vec![Modifier::new(ModifierEffect::PlusAttack(1), 0, true)]
     }
@@ -69,7 +69,7 @@ pub fn make_guardian() -> PartyMember {
         icon: Render::new(2, ColorPair::new(STEEL_BLUE,BLACK), 255),
         abilities: vec![Ability::Attack, Ability::Taunt],
         health: Health::new(30),
-        attack: Attack::new(2,3),
+        attack: Attack::new(1,5),
         threat: Threat::new(12),
         modifiers: Vec::new()
     }
@@ -84,7 +84,7 @@ pub fn enemy_make_forsaken_warrior() -> PartyMember {
         icon: Render::new(1, ColorPair::new(PURPLE,BLACK), 255),
         abilities: vec![Ability::Attack],
         health: Health::new(12),
-        attack: Attack::new(2,3),
+        attack: Attack::new(1,4),
         threat: Threat::new(4),
         modifiers: Vec::new()
     }
