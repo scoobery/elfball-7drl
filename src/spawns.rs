@@ -14,7 +14,7 @@ pub fn spawn_player(pos: Point) -> Object {
 }
 
 pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
-    let num_enemies = rng.range(f, 2 * f);
+    let num_enemies = rng.range(f, 2 * f + 2);
     Object {
         name: String::from("band of Forsaken Warriors"),
         floor: f,

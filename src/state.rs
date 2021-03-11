@@ -25,6 +25,11 @@ impl State {
     pub fn init() -> State {
        let mut logs = LogBuffer::new();
        logs.update_logs(LogMessage::new()
+           .add_part("Press", ColorPair::new(WHITE, GREY10))
+           .add_part("Slash (/)", ColorPair::new(GOLD, GREY10))
+           .add_part("to view the controls at any time.", ColorPair::new(WHITE, GREY10))
+       );
+       logs.update_logs(LogMessage::new()
            .add_part("Your ancestors have called upon you to save these lands from the bestial scourge they are beset against.", ColorPair::new(WHITE, GREY10))
            .add_part("Gather more", ColorPair::new(WHITE, GREY10))
            .add_part("Elves (☻)", ColorPair::new(LIME_GREEN, GREY10))

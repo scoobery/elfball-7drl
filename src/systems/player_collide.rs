@@ -37,7 +37,7 @@ pub fn check_player_collisions(gs: &mut State) {
             else {
                 add_member_to_party(e.clone(), player);
                 gs.logs.update_logs(LogMessage::new()
-                    .add_part(format!("{}", e.name), ColorPair::new(e.icon.get_render().1.fg, GREY10))
+                    .add_part(format!("{}, the {}", e.name, e.class), ColorPair::new(e.icon.get_render().1.fg, GREY10))
                     .add_part("has joined the party!", ColorPair::new(WHITE, GREY10))
                 );
             }

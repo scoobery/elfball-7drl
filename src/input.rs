@@ -3,7 +3,8 @@ use crate::prelude::*;
 pub enum Actions {
     MoveUp,MoveDown,MoveLeft,MoveRight,
     MoveUpLeft,MoveUpRight,MoveDownLeft,MoveDownRight,
-    Wait, CycleTarget
+    Wait, CycleTarget,
+    ShowHelp
 }
 
 //Grabs the player's keypresses
@@ -41,6 +42,9 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::T
             => process_action(gs, Actions::CycleTarget),
 
+            VirtualKeyCode::Slash
+            => process_action(gs, Actions::ShowHelp),
+
             _ => {}
         }
     }
@@ -64,7 +68,45 @@ fn process_action(gs: &mut State, action: Actions) {
             gs.player_targets.reset_targets(&gs.world.objects, &gs.world.map);
             gs.player_targets.cycle_current_target();
             false
-        }
+        },
+
+        Actions::ShowHelp => {
+            gs.logs.update_logs(LogMessage::new()
+                .add_part("=====================================================================================", ColorPair::new(WHITE,GREY10))
+            );
+            gs.logs.update_logs(LogMessage::new()
+                .add_part("Press", ColorPair::new(WHITE,GREY10))
+                .add_part("T", ColorPair::new(RED,GREY10))
+                .add_part("to cycle through visible targets.", ColorPair::new(WHITE,GREY10))
+            );
+            gs.logs.update_logs(LogMessage::new()
+                .add_part("Press", ColorPair::new(WHITE,GREY10))
+                .add_part("Numpad 5,", ColorPair::new(GREEN,GREY10))
+                .add_part("or .", ColorPair::new(CYAN,GREY10))
+                .add_part("to wait a turn.", ColorPair::new(WHITE,GREY10))
+            );
+            gs.logs.update_logs(LogMessage::new()
+                .add_part("Use the", ColorPair::new(WHITE,GREY10))
+                .add_part("Numpad (7,9,1,3),", ColorPair::new(GREEN,GREY10))
+                .add_part("or Y,U,B,N", ColorPair::new(CYAN,GREY10))
+                .add_part("to move diagonally.", ColorPair::new(WHITE,GREY10))
+            );
+            gs.logs.update_logs(LogMessage::new()
+                .add_part("Use the", ColorPair::new(WHITE,GREY10))
+                .add_part("arrow keys,", ColorPair::new(GOLD,GREY10))
+                .add_part("Numpad (8,2,4,6),", ColorPair::new(GREEN,GREY10))
+                .add_part("or Vim keys (J,K,H,L)", ColorPair::new(CYAN,GREY10))
+                .add_part("to move ↑, ↓, ←, and →.", ColorPair::new(WHITE,GREY10))
+            );
+            gs.logs.update_logs(LogMessage::new()
+                .add_part("Controls:", ColorPair::new(GOLD,GREY10))
+            );
+            gs.logs.update_logs(LogMessage::new()
+                .add_part("=====================================================================================", ColorPair::new(WHITE,GREY10))
+            );
+
+            false
+        },
 
         _ => false
     };
