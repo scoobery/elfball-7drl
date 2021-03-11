@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use crate::prelude::CellularReturnType::Distance2Add;
 
 pub fn update_targets_in_vision(gs: &mut State) {
     if let Some(tgt_idx) = gs.player_targets.get_current_target().clone() {
@@ -7,6 +6,9 @@ pub fn update_targets_in_vision(gs: &mut State) {
         let target_pos = gs.world.objects[tgt_idx].pos.as_ref().unwrap().clone();
 
         if !visible.contains(&target_pos) { gs.player_targets.reset_targets(&gs.world.objects, &gs.world.map); }
+    }
+    if gs.player_targets.possible_targets.is_empty() {
+        gs.player_targets.reset_targets(&gs.world.objects, &gs.world.map);
     }
 }
 

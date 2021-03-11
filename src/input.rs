@@ -4,7 +4,10 @@ pub enum Actions {
     MoveUp,MoveDown,MoveLeft,MoveRight,
     MoveUpLeft,MoveUpRight,MoveDownLeft,MoveDownRight,
     Wait, CycleTarget,
-    ShowHelp
+    ShowHelp,
+
+    UseAbility1, UseAbility2, UseAbility3, UseAbility4, UseAbility5, UseAbility6, UseAbility7, UseAbility8, UseAbility9, UseAbility0,
+    UseAbilityS1, UseAbilityS2, UseAbilityS3, UseAbilityS4, UseAbilityS5, UseAbilityS6, UseAbilityS7, UseAbilityS8, UseAbilityS9, UseAbilityS0,
 }
 
 //Grabs the player's keypresses
@@ -47,9 +50,93 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
 
             VirtualKeyCode::Key1
             => {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &StoredAbility::new(Ability::Deforest, 0, 0));
-                gs.set_refresh();
-                gs.set_proc();
+                if con.shift {
+                    process_action(gs, Actions::UseAbilityS1)
+                }
+                else {
+                    process_action(gs, Actions::UseAbility1)
+                }
+            },
+            VirtualKeyCode::Key2
+            => {
+                if con.shift {
+                    process_action(gs, Actions::UseAbilityS2)
+                }
+                else {
+                    process_action(gs, Actions::UseAbility2)
+                }
+            },
+            VirtualKeyCode::Key3
+            => {
+                if con.shift {
+                    process_action(gs, Actions::UseAbilityS3)
+                }
+                else {
+                    process_action(gs, Actions::UseAbility3)
+                }
+            },
+            VirtualKeyCode::Key4
+            => {
+                if con.shift {
+                    process_action(gs, Actions::UseAbilityS4)
+                }
+                else {
+                    process_action(gs, Actions::UseAbility4)
+                }
+            },
+            VirtualKeyCode::Key5
+            => {
+                if con.shift {
+                    process_action(gs, Actions::UseAbilityS5)
+                }
+                else {
+                    process_action(gs, Actions::UseAbility5)
+                }
+            },
+            VirtualKeyCode::Key6
+            => {
+                if con.shift {
+                    process_action(gs, Actions::UseAbilityS6)
+                }
+                else {
+                    process_action(gs, Actions::UseAbility6)
+                }
+            },
+            VirtualKeyCode::Key7
+            => {
+                if con.shift {
+                    process_action(gs, Actions::UseAbilityS7)
+                }
+                else {
+                    process_action(gs, Actions::UseAbility7)
+                }
+            },
+            VirtualKeyCode::Key8
+            => {
+                if con.shift {
+                    process_action(gs, Actions::UseAbilityS8)
+                }
+                else {
+                    process_action(gs, Actions::UseAbility8)
+                }
+            },
+            VirtualKeyCode::Key9
+            => {
+                if con.shift {
+                    process_action(gs, Actions::UseAbilityS9)
+                }
+                else {
+                    process_action(gs, Actions::UseAbility9)
+                }
+            },
+            VirtualKeyCode::Key0
+            => {
+                if con.shift {
+                    process_action(gs, Actions::UseAbilityS0)
+                }
+                else {
+                    process_action(gs, Actions::UseAbility0)
+                }
             },
 
             _ => {}
@@ -76,6 +163,128 @@ fn process_action(gs: &mut State, action: Actions) {
             gs.player_targets.cycle_current_target();
             false
         },
+
+        Actions::UseAbility1 => {
+            if 0 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[0]);
+            }
+            false
+        },
+        Actions::UseAbility2 => {
+            if 1 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[1]);
+            }
+            false
+        },
+        Actions::UseAbility3 => {
+            if 2 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[2]);
+            }
+            false
+        },
+        Actions::UseAbility4 => {
+            if 3 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[3]);
+            }
+            false
+        },
+        Actions::UseAbility5 => {
+            if 4 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[4]);
+            }
+            false
+        },
+        Actions::UseAbility6 => {
+            if 5 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[5]);
+            }
+            false
+        },
+        Actions::UseAbility7 => {
+            if 6 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[6]);
+            }
+            false
+        },
+        Actions::UseAbility8 => {
+            if 7 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[7]);
+            }
+            false
+        },
+        Actions::UseAbility9 => {
+            if 8 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[8]);
+            }
+            false
+        },
+        Actions::UseAbility0 => {
+            if 9 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[9]);
+            }
+            false
+        },
+        Actions::UseAbilityS1 => {
+            if 10 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[10]);
+            }
+            false
+        },
+        Actions::UseAbilityS2 => {
+            if 11 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[11]);
+            }
+            false
+        },
+        Actions::UseAbilityS3 => {
+            if 12 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[12]);
+            }
+            false
+        },
+        Actions::UseAbilityS4 => {
+            if 13 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[13]);
+            }
+            false
+        },
+        Actions::UseAbilityS5 => {
+            if 14 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[14]);
+            }
+            false
+        },
+        Actions::UseAbilityS6 => {
+            if 15 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[15]);
+            }
+            false
+        },
+        Actions::UseAbilityS7 => {
+            if 16 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[16]);
+            }
+            false
+        },
+        Actions::UseAbilityS8 => {
+            if 17 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[17]);
+            }
+            false
+        },
+        Actions::UseAbilityS9 => {
+            if 18 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[18]);
+            }
+            false
+        },
+        Actions::UseAbilityS0 => {
+            if 19 < gs.stored_abilities.len() {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &gs.stored_abilities[19]);
+            }
+            false
+        },
+
 
         Actions::ShowHelp => {
             gs.logs.update_logs(LogMessage::new()

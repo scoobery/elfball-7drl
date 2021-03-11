@@ -19,7 +19,9 @@ pub struct State {
     pub turn_state: TurnState,
     pub world: World,
     pub logs: LogBuffer,
-    pub player_targets: TargetList
+    pub player_targets: TargetList,
+    pub stored_abilities: Vec<StoredAbility>,
+    pub highlighted_ability: Option<usize>
 }
 impl State {
     pub fn init() -> State {
@@ -53,9 +55,30 @@ impl State {
            turn_state: TurnState::Player,
            world: World::new_game(),
            logs,
-           player_targets: TargetList::new()
+           player_targets: TargetList::new(),
+           stored_abilities: Vec::new(),
+           highlighted_ability: None
        }
     }
+
+    pub fn refresh_stored_abilities(&mut self) {
+        self.stored_abilities.clear();
+        for (i, member) in self.world.objects[0].members.iter().enumerate() {
+            for ability in member.abilities.iter() {
+                self.stored_abilities.push(StoredAbility::new(*ability, 0, i));
+            }
+        }
+        if self.stored_abilities.len() > 0 {
+            if self.highlighted_ability.is_none() {
+                self.highlighted_ability = Some(0);
+            }
+        }
+        else {
+            self.highlighted_ability = None;
+        }
+        self.set_refresh();
+    }
+
     pub fn set_proc(&mut self) { self.proc = true }
     pub fn set_refresh(&mut self) { self.refresh = true }
 }
@@ -83,6 +106,8 @@ impl GameState for State {
             self.set_proc();
             self.set_refresh();
         }
+
+        self.refresh_stored_abilities();
     }
 }
 
@@ -90,6 +115,8 @@ impl GameState for State {
 fn exec_all_systems(gs: &mut State) {
     if gs.proc {
         gs.proc = false;
+
+        apply_party_modifiers(&mut gs.world.objects[0].members);
 
         //Execute the systems and shit
         process_fov(&mut gs.world.objects, &mut gs.world.map);
@@ -113,6 +140,8 @@ fn exec_all_systems(gs: &mut State) {
 
         update_player_memory(&mut gs.world.objects);
         update_targets_in_vision(gs);
+
+        clean_party_modifiers(&mut gs.world.objects[0].members);
 
         if gs.player_death {
             gs.turn_state = TurnState::GameOver;

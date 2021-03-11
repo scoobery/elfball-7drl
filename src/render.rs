@@ -8,7 +8,7 @@ pub fn render_loop(gs: &State, con: &mut BTerm) {
         ContextState::InGame => {
             batch_map_draws(&gs.world.map, &gs.world.camera);
             batch_entity_draws(&gs.world.objects, &gs.world.map, &gs.world.camera, gs.world.depth, gs.player_targets.get_current_target());
-            batch_ui_draws(&gs.world.objects, &gs.logs, gs.player_targets.get_current_target());
+            batch_ui_draws(&gs.world.objects, &gs.logs, &gs.stored_abilities, gs.player_targets.get_current_target());
         }
     }
     render_draw_buffer(con).expect("Failed to render");
@@ -90,7 +90,7 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
     batch.submit(5000).expect("Failed to batch entity draw");
 }
 
-fn batch_ui_draws(objects: &Vec<Object>, logs: &LogBuffer, target: Option<usize>) {
+fn batch_ui_draws(objects: &Vec<Object>, logs: &LogBuffer, abilities: &Vec<StoredAbility>, target: Option<usize>) {
     let mut bg_batch = DrawBatch::new();
     let mut txt_batch = DrawBatch::new();
     bg_batch.target(MAP_CON);
@@ -172,6 +172,22 @@ fn batch_ui_draws(objects: &Vec<Object>, logs: &LogBuffer, target: Option<usize>
                 let threat_color = get_threat_color(threat_table[i]);
                 if threat_table[i] > 0 { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), format!("Threat: #{}", threat_table[i]), threat_color); }
                 else { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), "Threat: N/A", threat_color); }
+            }
+        }
+    }
+    {
+        let mut xptr = ability_box.x1;
+        let mut yptr = ability_box.y1;
+        for (i, ability) in abilities.iter().enumerate() {
+            txt_batch.print_color(Point::new(xptr, yptr), format!("({})", i + 1), ColorPair::new(GOLD, BLACK));
+            txt_batch.print_color(Point::new(xptr + 4, yptr), format!("{}", ability.name), ColorPair::new(WHITE, BLACK));
+
+            if yptr >= ability_box.y2 - 1 {
+                yptr = ability_box.y1;
+                xptr += 12;
+            }
+            else {
+                yptr += 1;
             }
         }
     }

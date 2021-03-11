@@ -50,7 +50,7 @@ impl Object {
 //Abilities
 #[derive(Clone, Copy, PartialEq)]
 pub enum Ability {
-    Taunt, CureWounds, RallyingCry, KillShot, Deforest
+    Taunt, CureWounds, RallyingCry, KillShot, Deforest, Block
 }
 pub struct StoredAbility {
     pub ability: Ability,
@@ -78,6 +78,7 @@ impl StoredAbility {
 fn get_ability_name(ability: Ability) -> String {
     match ability {
         Ability::Taunt => String::from("Taunt"),
+        Ability::Block => String::from("Block"),
         Ability::CureWounds => String::from("Cure Wounds"),
         Ability::RallyingCry => String::from("Rallying Cry"),
         Ability::KillShot => String::from("Kill Shot"),
@@ -88,6 +89,7 @@ fn get_ability_name(ability: Ability) -> String {
 fn get_ability_cooldown(ability: Ability) -> i32 {
     match ability {
         Ability::Taunt => 10,
+        Ability::Block => 12,
         Ability::CureWounds => 5,
         Ability::RallyingCry => 18,
         Ability::KillShot => 20,
@@ -99,8 +101,9 @@ fn get_ability_cooldown(ability: Ability) -> i32 {
 pub fn handle_abilities(objects: &mut Vec<Object>, map: &mut Map, ability: &StoredAbility) {
     match ability.ability {
         Ability::Taunt => run_taunt(&mut objects[ability.source_obj].members[ability.source_member]),
+        Ability::Block => run_block(&mut objects[ability.source_obj].members[ability.source_member]),
         Ability::CureWounds => {}
-        Ability::RallyingCry => {}
+        Ability::RallyingCry => { }
         Ability::KillShot => {}
         Ability::Deforest => run_deforest(objects[ability.source_obj].pos.as_ref().unwrap(), map),
     }
@@ -110,6 +113,10 @@ pub fn handle_abilities(objects: &mut Vec<Object>, map: &mut Map, ability: &Stor
 fn run_taunt(member: &mut PartyMember) {
     member.modifiers.push(Modifier::new(ModifierEffect::PlusThreat(10), 6, false))
 }
+fn run_block(member: &mut PartyMember) {
+    member.modifiers.push(Modifier::new(ModifierEffect::Block(5), 3, false))
+}
+
 
 fn run_deforest(source_pos: &Point, map: &mut Map) {
     let neighbor_list = {

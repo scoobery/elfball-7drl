@@ -34,20 +34,23 @@ impl Modifier {
 }
 #[derive(Clone, Copy, PartialEq)]
 pub enum ModifierEffect {
-    PlusAttack(i32), PlusThreat(i32), PlusHealth(i32)
+    PlusAttack(i32), PlusThreat(i32), Block(i32)
 }
 
 #[derive(Clone)]
 pub struct Health {
     max: i32,
-    current: i32
+    current: i32,
+    block: i32
 }
 impl Health {
-    pub fn new(max: i32) -> Health { Health { current: max, max } }
+    pub fn new(max: i32) -> Health { Health { current: max, max, block: 0 } }
     pub fn get_max(&self) -> i32 { return self.max }
     pub fn get_life(&self) -> i32 { return self.current }
     pub fn gain_life(&mut self, amt: i32) { self.current += amt }
     pub fn lose_life(&mut self, amt: i32) { self.current -= amt }
+    pub fn set_block(&mut self, block: i32) { self.block = block }
+    pub fn reset_block(&mut self) { self.block = 0 }
 }
 
 #[derive(Clone)]
