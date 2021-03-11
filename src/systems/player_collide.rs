@@ -45,6 +45,8 @@ pub fn check_player_collisions(gs: &mut State) {
         for r in remove_list.iter() {
             gs.world.objects.remove(*r);
         }
+
+        gs.player_targets.reset_targets(&gs.world.objects, &gs.world.map);
     }
 }
 

@@ -4,13 +4,11 @@ pub fn render_loop(gs: &State, con: &mut BTerm) {
     con.cls();
     render_draw_buffer(con).expect("Failed to render");
     match gs.status {
-        ContextState::MainMenu => {}
         ContextState::GameMenu => {}
-        ContextState::Paused => {}
         ContextState::InGame => {
             batch_map_draws(&gs.world.map, &gs.world.camera);
-            batch_entity_draws(&gs.world.objects, &gs.world.map, &gs.world.camera, gs.world.depth);
-            batch_ui_draws(&gs.world.objects, &gs.logs);
+            batch_entity_draws(&gs.world.objects, &gs.world.map, &gs.world.camera, gs.world.depth, gs.player_targets.get_current_target());
+            batch_ui_draws(&gs.world.objects, &gs.logs, gs.player_targets.get_current_target());
         }
     }
     render_draw_buffer(con).expect("Failed to render");
@@ -46,14 +44,15 @@ fn batch_map_draws(map: &Map, camera: &Camera) {
 }
 
 //Adds all visible entity renderables to the rendering batch.
-fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: u32) {
+fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: u32, player_target: Option<usize>) {
     let mut batch = DrawBatch::new();
     batch.target(MAP_CON);
     let offset = Point::new(camera.min_x, camera.min_y);
 
+    let mut target_pos: Option<Point> = None;
     //Grab all objects that are drawable and have a position (force the player in at the end)
     let mut render_list: Vec<(&Object, bool)> = Vec::new();
-    for object in objects.iter() {
+    for (i, object) in objects.iter().enumerate() {
         if object.pos.is_some() && object.render.is_some() {
             let pos = object.pos.as_ref().unwrap();
             let idx = map.point2d_to_index(*pos);
@@ -63,6 +62,9 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
                 } else if map.revealed[idx] && object.player_mem.seen {
                     render_list.push((object, false))
                 }
+            }
+            if let Some(tgt) = player_target {
+                if i == tgt { target_pos = object.pos }
             }
         }
     }
@@ -83,10 +85,12 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
         }
     }
 
+    if let Some(pos) = target_pos { batch.set_bg(pos - offset, RGBA::from_u8(255, 165, 0, 255)); }
+
     batch.submit(5000).expect("Failed to batch entity draw");
 }
 
-fn batch_ui_draws(objects: &Vec<Object>, logs: &LogBuffer) {
+fn batch_ui_draws(objects: &Vec<Object>, logs: &LogBuffer, target: Option<usize>) {
     let mut bg_batch = DrawBatch::new();
     let mut txt_batch = DrawBatch::new();
     bg_batch.target(MAP_CON);
@@ -133,7 +137,6 @@ fn batch_ui_draws(objects: &Vec<Object>, logs: &LogBuffer) {
 
     {
         let player_party = &objects[0].members;
-
         let threat_table = make_threat_table(&player_party);
 
         for (i, member) in player_party.iter().enumerate() {
@@ -151,11 +154,26 @@ fn batch_ui_draws(objects: &Vec<Object>, logs: &LogBuffer) {
             else { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), "Threat: N/A", threat_color); }
         }
     }
-    for sbox in combat_sub_boxes.iter() {
-        /*
-        txt_batch.fill_region(*sbox, ColorPair::new(WHITE, BLACK), 7);
-        txt_batch.print_color(Point::new(sbox.x1, sbox.y1), format!("Member {}", i), ColorPair::new(BLACK, WHITE));
-         */
+    {
+        if let Some(tgt) = target {
+            let target_party = &objects[tgt].members;
+            let threat_table = make_threat_table(&target_party);
+
+            for (i, member) in target_party.iter().enumerate() {
+                let sbox = combat_sub_boxes[i];
+                txt_batch.print_color(Point::new(sbox.x1, sbox.y1), ".............", ColorPair::new(GREY15, BLACK));
+                txt_batch.print_color(Point::new(sbox.x1, sbox.y1), format!("{}", member.name), ColorPair::new(member.icon.get_render().1.fg, BLACK));
+                txt_batch.print_color_right(Point::new(sbox.x2, sbox.y1), format!("{}", to_char(member.icon.get_render().0 as u8)), ColorPair::new(member.icon.get_render().1.fg, BLACK));
+                txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 1), format!("{}", member.class), ColorPair::new(WHITE, BLACK));
+
+                let health_color = get_health_color(&member.health);
+                txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 2), format!("HP: {}/{}", member.health.get_life(), member.health.get_max()), health_color);
+
+                let threat_color = get_threat_color(threat_table[i]);
+                if threat_table[i] > 0 { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), format!("Threat: #{}", threat_table[i]), threat_color); }
+                else { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), "Threat: N/A", threat_color); }
+            }
+        }
     }
 
     //Print out the log buffer

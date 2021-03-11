@@ -3,7 +3,7 @@ use crate::prelude::*;
 pub enum Actions {
     MoveUp,MoveDown,MoveLeft,MoveRight,
     MoveUpLeft,MoveUpRight,MoveDownLeft,MoveDownRight,
-    Wait,
+    Wait, CycleTarget
 }
 
 //Grabs the player's keypresses
@@ -38,6 +38,9 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::Numpad5 | VirtualKeyCode::Period
             => process_action(gs, Actions::Wait),
 
+            VirtualKeyCode::T
+            => process_action(gs, Actions::CycleTarget),
+
             _ => {}
         }
     }
@@ -56,6 +59,12 @@ fn process_action(gs: &mut State, action: Actions) {
         Actions::MoveDownRight => try_move_player(gs, DL_DOWN + DL_RIGHT),
 
         Actions::Wait => true,
+
+        Actions::CycleTarget => {
+            gs.player_targets.reset_targets(&gs.world.objects, &gs.world.map);
+            gs.player_targets.cycle_current_target();
+            false
+        }
 
         _ => false
     };

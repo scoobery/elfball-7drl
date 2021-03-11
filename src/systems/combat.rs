@@ -9,12 +9,13 @@ impl TargetedAttack {
     pub fn new(target: (usize, usize), damage: i32) -> TargetedAttack { TargetedAttack { target, damage } }
 }
 
-pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_death: &mut bool) {
+pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_death: &mut bool, player_targets: &mut TargetList, map: &Map) {
     let mut attack_list: Vec<(usize, TargetedAttack)> = Vec::new();
     let mut kill_list: Vec<(usize, usize)> = Vec::new();
+    let mut refresh_targets = false;
 
     //Save the targeted attack and the ID of the object triggering it
-    for (i,obj) in objects.iter_mut().enumerate() {
+    for (i, obj) in objects.iter_mut().enumerate() {
         //Also determine if the parties should be gaining threat or resetting
         let should_gain_threat = obj.in_combat;
         for member in obj.members.iter_mut() {
@@ -59,13 +60,13 @@ pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_de
         //Remove the whole object if the party is empty (but also not the player)
         if object_party.is_empty() {
             if objects[k.0].tag != ActorTag::Player {
+                refresh_targets = true;
                 logs.update_logs(LogMessage::new()
                     .add_part("You have defeated the", ColorPair::new(WHITE, GREY10))
                     .add_part(format!("{}.", objects[k.0].name), ColorPair::new(objects[k.0].render.as_ref().unwrap().get_render().1.fg, GREY10))
                 );
                 objects.remove(k.0);
-            }
-            else {
+            } else {
                 *player_death = true;
             }
         }
@@ -73,11 +74,18 @@ pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_de
 
     //Mark off the player as no longer in combat if there are no enemies around them
     let player_view = objects[0].viewshed.as_ref().unwrap().visible.to_vec();
-    let mut still_in_combat = false;
-    for obj in objects.iter() {
-        if player_view.contains(obj.pos.as_ref().unwrap()) && obj.tag == ActorTag::Enemy {
-            still_in_combat = true;
+    let mut still_in_combat = {
+        let mut result = false;
+        for obj in objects.iter() {
+            if let Object { pos: Some(pos), tag, .. } = obj {
+                if player_view.contains(pos) && tag == &ActorTag::Enemy {
+                    result = true
+                }
+            }
         }
-    }
+        result
+    };
     objects[0].in_combat = still_in_combat;
+
+    if refresh_targets { player_targets.reset_targets(objects, map) }
 }

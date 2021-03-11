@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum ContextState {
-    MainMenu, InGame, Paused, GameMenu
+    InGame, GameMenu
 }
 #[derive(Clone, Copy, PartialEq)]
 pub enum TurnState {
@@ -18,7 +18,8 @@ pub struct State {
     pub status: ContextState,
     pub turn_state: TurnState,
     pub world: World,
-    pub logs: LogBuffer
+    pub logs: LogBuffer,
+    pub player_targets: TargetList
 }
 impl State {
     pub fn init() -> State {
@@ -46,7 +47,8 @@ impl State {
            status: ContextState::InGame,
            turn_state: TurnState::Player,
            world: World::new_game(),
-           logs
+           logs,
+           player_targets: TargetList::new()
        }
     }
     pub fn set_proc(&mut self) { self.proc = true }
@@ -58,8 +60,6 @@ impl GameState for State {
         else if self.turn_state == TurnState::GameOver { /*Do the other thing once it's ready*/ }
 
         match self.status {
-            ContextState::MainMenu => {}
-            ContextState::Paused => {}
             ContextState::GameMenu => {}
             ContextState::InGame => {
                 exec_all_systems(self);
@@ -74,6 +74,7 @@ impl GameState for State {
         if self.go_next_level {
             self.go_next_level = false;
             self.world.generate_new_map();
+            self.player_targets.reset_targets(&self.world.objects, &self.world.map);
             self.set_proc();
             self.set_refresh();
         }
@@ -87,7 +88,7 @@ fn exec_all_systems(gs: &mut State) {
 
         //Execute the systems and shit
         process_fov(&mut gs.world.objects, &mut gs.world.map);
-        process_combat(&mut gs.world.objects, &mut gs.logs, &mut gs.player_death);
+        process_combat(&mut gs.world.objects, &mut gs.logs, &mut gs.player_death, &mut gs.player_targets, &gs.world.map);
         update_blocked_tiles(&mut gs.world.objects, &mut gs.world.map, gs.world.depth);
         check_player_collisions(gs);
 
@@ -100,12 +101,13 @@ fn exec_all_systems(gs: &mut State) {
         if gs.turn_state == TurnState::AI {
             process_ai(&mut gs.world.objects, &mut gs.world.map, gs.world.depth, &mut gs.world.rng, &mut gs.logs);
             process_fov(&mut gs.world.objects, &mut gs.world.map);
-            process_combat(&mut gs.world.objects, &mut gs.logs, &mut gs.player_death);
+            process_combat(&mut gs.world.objects, &mut gs.logs, &mut gs.player_death, &mut gs.player_targets, &gs.world.map);
             update_blocked_tiles(&mut gs.world.objects, &mut gs.world.map, gs.world.depth);
             gs.turn_state = TurnState::Player;
         }
 
         update_player_memory(&mut gs.world.objects);
+        update_targets_in_vision(gs);
 
         if gs.player_death {
             gs.turn_state = TurnState::GameOver;
