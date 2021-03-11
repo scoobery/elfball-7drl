@@ -12,19 +12,17 @@ pub struct PartyMember {
     pub modifiers: Vec<Modifier>
 }
 
-#[derive(Clone, Copy, PartialEq)]
-pub enum Ability {
-    Attack, Taunt, CureWounds, RallyingCry
-}
-
 #[derive(Clone)]
 pub struct Modifier {
     pub effect: ModifierEffect,
     ttl: u32,
-    permanent: bool
+    permanent: bool,
+    applied: bool
 }
 impl Modifier {
-    pub fn new(effect: ModifierEffect, ttl: u32, permanent: bool) -> Modifier { Modifier { effect, ttl, permanent } }
+    pub fn new(effect: ModifierEffect, ttl: u32, permanent: bool) -> Modifier { Modifier { effect, ttl, permanent, applied: false } }
+    pub fn set_applied(&mut self) { self.applied = true }
+    pub fn has_been_applied(&self) -> bool { self.applied }
     pub fn tick_down(&mut self) { if !self.permanent { self.ttl -= 1 } }
     pub fn ttl_is_zero(&self) -> bool {
         if self.permanent {
@@ -55,11 +53,14 @@ impl Health {
 #[derive(Clone)]
 pub struct Attack {
     damage: (i32,i32),
+    modifier: i32,
     able_to_attack: bool
 }
 impl Attack {
-    pub fn new(num: i32, d: i32) -> Attack { Attack { damage: (num,d), able_to_attack: true } }
-    pub fn roll_for_damage(&self, rng: &mut RandomNumberGenerator) -> i32 { return rng.roll_dice(self.damage.0, self.damage.1) }
+    pub fn new(num: i32, d: i32) -> Attack { Attack { damage: (num,d), modifier: 0, able_to_attack: true } }
+    pub fn roll_for_damage(&self, rng: &mut RandomNumberGenerator) -> i32 { return rng.roll_dice(self.damage.0, self.damage.1) + self.modifier }
+    pub fn set_modifier(&mut self, modifier: i32) { self.modifier = modifier }
+    pub fn reset_modifier(&mut self) { self.modifier = 0 }
     pub fn is_able(&self) -> bool { self.able_to_attack }
     pub fn disable_attack(&mut self) { self.able_to_attack = false }
     pub fn enable_attack(&mut self) { self.able_to_attack = true }
@@ -68,13 +69,16 @@ impl Attack {
 #[derive(Clone)]
 pub struct Threat {
     current: u32,
-    gain: u32
+    gain: u32,
+    modifier: u32
 }
 impl Threat {
-    pub fn new(threat: u32) -> Threat { Threat { current: 0, gain: threat } }
+    pub fn new(threat: u32) -> Threat { Threat { current: 0, gain: threat, modifier: 0 } }
     pub fn get_threat(&self) -> u32 { return self.current }
     pub fn reset_threat(&mut self) { self.current = 0 }
-    pub fn increment_threat(&mut self) { self.current += self.gain }
+    pub fn increment_threat(&mut self) { self.current += self.gain + self.modifier }
+    pub fn set_modifier(&mut self, modifier: u32) { self.modifier = modifier }
+    pub fn reset_modifier(&mut self) { self.modifier = 0 }
 }
 
 

@@ -45,6 +45,13 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::Slash
             => process_action(gs, Actions::ShowHelp),
 
+            VirtualKeyCode::Key1
+            => {
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &StoredAbility::new(Ability::Deforest, 0, 0));
+                gs.set_refresh();
+                gs.set_proc();
+            },
+
             _ => {}
         }
     }
