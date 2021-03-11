@@ -19,7 +19,7 @@ impl Object {
     }
 
     pub fn try_attack(&mut self, target: &mut Object, target_id: usize, rng: &mut RandomNumberGenerator, logs: &mut LogBuffer) {
-        for member in self.members.iter() {
+        for member in self.members.iter_mut() {
             if member.attack.is_able() {
                 let mut attack_target = 0;
                 let mut threat_num = 0;
@@ -42,6 +42,9 @@ impl Object {
                     .add_part(format!("for {} damage.", damage), ColorPair::new(WHITE, GREY10))
                 );
             }
+            else {
+                member.attack.enable_attack();
+            }
         }
     }
 }
@@ -50,73 +53,112 @@ impl Object {
 //Abilities
 #[derive(Clone, Copy, PartialEq)]
 pub enum Ability {
-    Taunt, CureWounds, RallyingCry, KillShot, Deforest, Block
+    Taunt, CureWounds, LesserCureWounds, RallyingCry, KillShot, Deforest, Block
 }
 pub struct StoredAbility {
     pub ability: Ability,
     pub name: String,
-    pub min_cooldown: i32,
-    pub cd_timer: i32,
+    pub on_cooldown: bool,
     pub source_obj: usize,
-    pub source_member: usize
+    pub source_member: usize,
+    pub source_ability_id: usize
 }
 impl StoredAbility {
-    pub fn new(ability: Ability, source_obj: usize, source_member: usize) -> StoredAbility {
+    pub fn new(ability: Ability, source_obj: usize, source_member: usize, source_ability_id: usize, on_cooldown: bool) -> StoredAbility {
         let name = get_ability_name(ability);
-        let min_cooldown = get_ability_cooldown(ability);
-
         StoredAbility {
-            ability, name, min_cooldown, cd_timer: 0, source_obj, source_member
+            ability, name, on_cooldown, source_obj, source_member, source_ability_id
         }
     }
-    pub fn increment_cd_timer(&mut self) {
-        if self.cd_timer < self.min_cooldown { self.cd_timer += 1 }
-        else { self.cd_timer = 0 }
+    pub fn is_on_cooldown(&self) -> bool { self.on_cooldown }
+    pub fn set_source_on_cooldown(&mut self, objects: &mut Vec<Object>) {
+        let ability_source = &mut objects[self.source_obj].members[self.source_member].abilities[self.source_ability_id];
+        ability_source.set_on_cooldown();
     }
 }
 
-fn get_ability_name(ability: Ability) -> String {
+pub fn get_ability_name(ability: Ability) -> String {
     match ability {
         Ability::Taunt => String::from("Taunt"),
         Ability::Block => String::from("Block"),
         Ability::CureWounds => String::from("Cure Wounds"),
+        Ability::LesserCureWounds => String::from("Lesser Cure"),
         Ability::RallyingCry => String::from("Rallying Cry"),
         Ability::KillShot => String::from("Kill Shot"),
         Ability::Deforest => String::from("Deforest"),
     }
 }
 
-fn get_ability_cooldown(ability: Ability) -> i32 {
+pub fn get_ability_cooldown(ability: Ability) -> i32 {
     match ability {
         Ability::Taunt => 10,
-        Ability::Block => 12,
+        Ability::Block => 10,
         Ability::CureWounds => 5,
-        Ability::RallyingCry => 18,
+        Ability::LesserCureWounds => 15,
+        Ability::RallyingCry => 15,
         Ability::KillShot => 20,
-        Ability::Deforest => 20,
+        Ability::Deforest => 16,
     }
 }
 
 
-pub fn handle_abilities(objects: &mut Vec<Object>, map: &mut Map, ability: &StoredAbility) {
-    match ability.ability {
-        Ability::Taunt => run_taunt(&mut objects[ability.source_obj].members[ability.source_member]),
-        Ability::Block => run_block(&mut objects[ability.source_obj].members[ability.source_member]),
-        Ability::CureWounds => {}
-        Ability::RallyingCry => { }
-        Ability::KillShot => {}
-        Ability::Deforest => run_deforest(objects[ability.source_obj].pos.as_ref().unwrap(), map),
+pub fn handle_abilities(objects: &mut Vec<Object>, map: &mut Map, ability: &mut StoredAbility, rng: &mut RandomNumberGenerator, logs: &mut LogBuffer) {
+    if !ability.is_on_cooldown() {
+        match ability.ability {
+            Ability::Taunt => run_taunt(&mut objects[ability.source_obj].members[ability.source_member], logs),
+            Ability::Block => run_block(&mut objects[ability.source_obj].members[ability.source_member], logs),
+            Ability::CureWounds => run_cure_wounds(&mut objects[ability.source_obj].members, ability.source_member, rng, logs),
+            Ability::LesserCureWounds => run_cure_wounds(&mut objects[ability.source_obj].members, ability.source_member, rng, logs),
+            Ability::RallyingCry => {}
+            Ability::KillShot => {}
+            Ability::Deforest => run_deforest(objects[ability.source_obj].pos.as_ref().unwrap(), map),
+        }
+        ability.set_source_on_cooldown(objects);
+    }
+    else {
+        logs.update_logs(LogMessage::new()
+            .add_part(format!("{}'s", objects[ability.source_obj].members[ability.source_member].name), ColorPair::new(objects[ability.source_obj].members[ability.source_member].icon.get_render().1.fg, GREY10))
+            .add_part(format!("{} is still on cooldown!", ability.name), ColorPair::new(WHITE, GREY10))
+        );
     }
     if let Some(view) = &mut objects[ability.source_obj].viewshed { view.refresh = true; }
 }
 
-fn run_taunt(member: &mut PartyMember) {
-    member.modifiers.push(Modifier::new(ModifierEffect::PlusThreat(10), 6, false))
+fn run_taunt(member: &mut PartyMember, logs: &mut LogBuffer) {
+    member.modifiers.push(Modifier::new(ModifierEffect::PlusThreat(10), 6, false));
+    logs.update_logs(LogMessage::new()
+        .add_part(format!("{}",member.name), ColorPair::new(member.icon.get_render().1.fg, GREY10))
+        .add_part("lets out a threatening shout, taunting enemies to attack them!", ColorPair::new(WHITE, GREY10))
+    );
 }
-fn run_block(member: &mut PartyMember) {
-    member.modifiers.push(Modifier::new(ModifierEffect::Block(5), 3, false))
+fn run_block(member: &mut PartyMember, logs: &mut LogBuffer) {
+    member.modifiers.push(Modifier::new(ModifierEffect::Block(5), 2, false));
+    logs.update_logs(LogMessage::new()
+        .add_part(format!("{}",member.name), ColorPair::new(member.icon.get_render().1.fg, GREY10))
+        .add_part("raises their shield, blocking the enemies' blows!", ColorPair::new(WHITE, GREY10))
+    );
+    member.attack.disable_attack();
 }
+fn run_cure_wounds(members: &mut Vec<PartyMember>, caster_id: usize, rng: &mut RandomNumberGenerator, logs: &mut LogBuffer) {
+    let health_list = {
+        let mut vec = members.iter().enumerate()
+            .map(|(i, m)| (i, m.health.get_life()))
+            .collect::<Vec<(usize, i32)>>();
+        vec.sort_by(|a,b| b.1.cmp(&a.1));
+        vec
+    };
+    let amt = rng.roll_dice(3,4);
+    members[health_list[0].0].health.gain_life(amt);
 
+    logs.update_logs(LogMessage::new()
+        .add_part(format!("{}", members[caster_id].name.clone()), ColorPair::new(members[caster_id].icon.get_render().1.fg, GREY10))
+        .add_part("casts a healing wave upon", ColorPair::new(WHITE, GREY10))
+        .add_part(format!("{}", members[health_list[0].0].name), ColorPair::new(members[health_list[0].0].icon.get_render().1.fg, GREY10))
+        .add_part("for", ColorPair::new(WHITE, GREY10))
+        .add_part(format!("{}", amt), ColorPair::new(GOLD, GREY10))
+        .add_part("HP.", ColorPair::new(WHITE, GREY10))
+    );
+}
 
 fn run_deforest(source_pos: &Point, map: &mut Map) {
     let neighbor_list = {

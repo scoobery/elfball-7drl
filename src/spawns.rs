@@ -8,7 +8,7 @@ pub fn spawn_player(pos: Point) -> Object {
         pos: Some(pos),
         render: Some(Render::new(64, ColorPair::new(GOLD1, BLACK), 255)),
         viewshed: Some(Viewshed { range: 6, visible: Vec::new(), refresh: true }),
-        members: vec![make_hero()],
+        members: vec![make_guardian(), make_bard()],
         ..Default::default()
     }
 }
@@ -31,7 +31,7 @@ pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u3
 pub fn spawn_elf_pickup(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
     let diceroll = rng.roll_dice(1, 2);
     let member = match diceroll {
-        1 => vec![make_hero()],
+        1 => vec![make_bard()],
         2 => vec![make_guardian()],
         _ => Vec::new()
     };
@@ -50,15 +50,15 @@ pub fn spawn_elf_pickup(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> 
 }
 
 //Party Member definitions
-pub fn make_hero() -> PartyMember {
+pub fn make_bard() -> PartyMember {
     PartyMember {
         name: format!("{}", make_random_elf_name()),
-        class: String::from("Hero"),
+        class: String::from("Bard"),
         icon: Render::new(2, ColorPair::new(GOLD,BLACK), 255),
-        abilities: vec![Ability::RallyingCry],
+        abilities: vec![AbilityClass::new(Ability::RallyingCry), AbilityClass::new(Ability::LesserCureWounds)],
         health: Health::new(20),
         attack: Attack::new(2,3),
-        threat: Threat::new(6),
+        threat: Threat::new(4, 2),
         modifiers: vec![Modifier::new(ModifierEffect::PlusAttack(1), 0, true)],
     }
 }
@@ -67,10 +67,10 @@ pub fn make_guardian() -> PartyMember {
         name: format!("{}", make_random_elf_name()),
         class: String::from("Guardian"),
         icon: Render::new(2, ColorPair::new(STEEL_BLUE,BLACK), 255),
-        abilities: vec![Ability::Taunt],
+        abilities: vec![AbilityClass::new(Ability::Taunt), AbilityClass::new(Ability::Block)],
         health: Health::new(30),
-        attack: Attack::new(1,5),
-        threat: Threat::new(12),
+        attack: Attack::new(1,6),
+        threat: Threat::new(6, 1),
         modifiers: Vec::new(),
     }
 }
@@ -85,7 +85,7 @@ pub fn enemy_make_forsaken_warrior() -> PartyMember {
         abilities: vec![],
         health: Health::new(12),
         attack: Attack::new(1,4),
-        threat: Threat::new(4),
+        threat: Threat::new(4, 2),
         modifiers: Vec::new(),
     }
 }

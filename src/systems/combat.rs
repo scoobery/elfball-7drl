@@ -89,3 +89,14 @@ pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_de
 
     if refresh_targets { player_targets.reset_targets(objects, map) }
 }
+
+
+pub fn process_all_cooldowns(objects: &mut Vec<Object>) {
+    for obj in objects.iter_mut() {
+        for member in obj.members.iter_mut() {
+            for ability in member.abilities.iter_mut() {
+                if ability.is_on_cooldown() { ability.increment_cd_timer(); }
+            }
+        }
+    }
+}

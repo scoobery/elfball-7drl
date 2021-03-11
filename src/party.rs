@@ -5,7 +5,7 @@ pub struct PartyMember {
     pub name: String,
     pub class: String,
     pub icon: Render,
-    pub abilities: Vec<Ability>,
+    pub abilities: Vec<AbilityClass>,
     pub health: Health,
     pub attack: Attack,
     pub threat: Threat,
@@ -47,8 +47,22 @@ impl Health {
     pub fn new(max: i32) -> Health { Health { current: max, max, block: 0 } }
     pub fn get_max(&self) -> i32 { return self.max }
     pub fn get_life(&self) -> i32 { return self.current }
-    pub fn gain_life(&mut self, amt: i32) { self.current += amt }
-    pub fn lose_life(&mut self, amt: i32) { self.current -= amt }
+    pub fn gain_life(&mut self, amt: i32) {
+        if self.current + amt >= self.max {
+            self.current = self.max
+        }
+        else {
+            self.current += amt
+        }
+    }
+    pub fn lose_life(&mut self, amt: i32) {
+        if amt - self.block < 0 {
+            self.current -= amt
+        }
+        else {
+            self.current -= (amt - self.block)
+        }
+    }
     pub fn set_block(&mut self, block: i32) { self.block = block }
     pub fn reset_block(&mut self) { self.block = 0 }
 }
@@ -72,16 +86,53 @@ impl Attack {
 #[derive(Clone)]
 pub struct Threat {
     current: u32,
+    starting: u32,
     gain: u32,
     modifier: u32
 }
 impl Threat {
-    pub fn new(threat: u32) -> Threat { Threat { current: 0, gain: threat, modifier: 0 } }
+    pub fn new(gain: u32, starting: u32) -> Threat { Threat { current: 0, starting, gain, modifier: 0 } }
     pub fn get_threat(&self) -> u32 { return self.current }
     pub fn reset_threat(&mut self) { self.current = 0 }
-    pub fn increment_threat(&mut self) { self.current += self.gain + self.modifier }
+    pub fn increment_threat(&mut self) {
+        if self.current == 0 {
+            self.current = self.starting;
+        }
+        else {
+            self.current += self.gain + self.modifier;
+        }
+    }
     pub fn set_modifier(&mut self, modifier: u32) { self.modifier = modifier }
     pub fn reset_modifier(&mut self) { self.modifier = 0 }
+}
+
+#[derive(Clone,Copy)]
+pub struct AbilityClass {
+    pub ability: Ability,
+    pub on_cooldown: bool,
+    pub min_cooldown: i32,
+    pub cooldown_timer: i32
+}
+impl AbilityClass {
+    pub fn new(ability: Ability) -> AbilityClass {
+        AbilityClass {
+            ability,
+            on_cooldown: false,
+            min_cooldown: get_ability_cooldown(ability),
+            cooldown_timer: 0
+        }
+    }
+    pub fn set_on_cooldown(&mut self) { self.on_cooldown = true }
+    pub fn increment_cd_timer(&mut self) {
+        if self.min_cooldown > self.cooldown_timer {
+            self.cooldown_timer += 1
+        }
+        else {
+            self.cooldown_timer = 0;
+            self.on_cooldown = false;
+        }
+    }
+    pub fn is_on_cooldown(&self) -> bool { self.on_cooldown }
 }
 
 

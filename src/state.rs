@@ -20,8 +20,7 @@ pub struct State {
     pub world: World,
     pub logs: LogBuffer,
     pub player_targets: TargetList,
-    pub stored_abilities: Vec<StoredAbility>,
-    pub highlighted_ability: Option<usize>
+    pub stored_abilities: Vec<StoredAbility>
 }
 impl State {
     pub fn init() -> State {
@@ -56,25 +55,16 @@ impl State {
            world: World::new_game(),
            logs,
            player_targets: TargetList::new(),
-           stored_abilities: Vec::new(),
-           highlighted_ability: None
+           stored_abilities: Vec::new()
        }
     }
 
     pub fn refresh_stored_abilities(&mut self) {
         self.stored_abilities.clear();
-        for (i, member) in self.world.objects[0].members.iter().enumerate() {
-            for ability in member.abilities.iter() {
-                self.stored_abilities.push(StoredAbility::new(*ability, 0, i));
+        for (i, member) in self.world.objects[0].members.iter_mut().enumerate() {
+            for (j, ability) in member.abilities.iter().enumerate() {
+                self.stored_abilities.push(StoredAbility::new(ability.ability, 0, i, j, ability.on_cooldown));
             }
-        }
-        if self.stored_abilities.len() > 0 {
-            if self.highlighted_ability.is_none() {
-                self.highlighted_ability = Some(0);
-            }
-        }
-        else {
-            self.highlighted_ability = None;
         }
         self.set_refresh();
     }
@@ -97,6 +87,7 @@ impl GameState for State {
         if self.refresh {
             render_loop(&self, con);
             self.refresh = false;
+            self.refresh_stored_abilities();
         }
 
         if self.go_next_level {
@@ -106,8 +97,6 @@ impl GameState for State {
             self.set_proc();
             self.set_refresh();
         }
-
-        self.refresh_stored_abilities();
     }
 }
 
@@ -125,6 +114,7 @@ fn exec_all_systems(gs: &mut State) {
         check_player_collisions(gs);
 
         if gs.passed_turn {
+            process_all_cooldowns(&mut gs.world.objects);
             gs.turn_state = TurnState::AI;
             gs.passed_turn = false;
             process_fov(&mut gs.world.objects, &mut gs.world.map);
