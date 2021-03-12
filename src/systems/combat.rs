@@ -12,6 +12,7 @@ impl TargetedAttack {
 pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_death: &mut bool, player_targets: &mut TargetList, map: &Map, fkills: &mut u32, bkills: &mut u32) {
     let mut attack_list: Vec<(usize, TargetedAttack)> = Vec::new();
     let mut kill_list: Vec<(usize, usize)> = Vec::new();
+    let mut check_ai_list: Vec<(usize, usize)> = Vec::new();
     let mut refresh_targets = false;
 
     //Save the targeted attack and the ID of the object triggering it
@@ -29,9 +30,23 @@ pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_de
         if !obj.inc_attacks.is_empty() {
             for a in obj.inc_attacks.iter() {
                 attack_list.push((i, a.clone()));
+                check_ai_list.push((i, a.target.0));
             }
         }
     }
+
+    for c in check_ai_list.iter() {
+        let player_pos = &objects[0].pos.as_ref().unwrap().clone();
+        if let Some(ai) = &mut objects[c.1].ai {
+            if c.0 == 0 {
+                ai.target = Some(0);
+                ai.state = AIState::Chasing;
+                ai.tgt_memory = 24;
+                ai.tgt_heatmap.reset_to_single_node(player_pos);
+            }
+        }
+    }
+
     //Clear the incoming attacks
     for a in attack_list.iter() {
         objects[a.0].inc_attacks.clear();
