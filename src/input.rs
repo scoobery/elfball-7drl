@@ -51,91 +51,111 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::Key1
             => {
                 if con.shift {
-                    process_action(gs, Actions::UseAbilityS1)
+                    if !con.control { process_action(gs, Actions::UseAbilityS1) }
+                    else { describe_ability(gs, 10) }
                 }
                 else {
-                    process_action(gs, Actions::UseAbility1)
+                    if !con.control { process_action(gs, Actions::UseAbility1) }
+                    else { describe_ability(gs, 0) }
                 }
             },
             VirtualKeyCode::Key2
             => {
                 if con.shift {
-                    process_action(gs, Actions::UseAbilityS2)
+                    if !con.control { process_action(gs, Actions::UseAbilityS2) }
+                    else { describe_ability(gs, 11) }
                 }
                 else {
-                    process_action(gs, Actions::UseAbility2)
+                    if !con.control { process_action(gs, Actions::UseAbility2) }
+                    else { describe_ability(gs, 1) }
                 }
             },
             VirtualKeyCode::Key3
             => {
                 if con.shift {
-                    process_action(gs, Actions::UseAbilityS3)
+                    if !con.control { process_action(gs, Actions::UseAbilityS3) }
+                    else { describe_ability(gs, 12) }
                 }
                 else {
-                    process_action(gs, Actions::UseAbility3)
+                    if !con.control { process_action(gs, Actions::UseAbility3) }
+                    else { describe_ability(gs, 2) }
                 }
             },
             VirtualKeyCode::Key4
             => {
                 if con.shift {
-                    process_action(gs, Actions::UseAbilityS4)
+                    if !con.control { process_action(gs, Actions::UseAbilityS4) }
+                    else { describe_ability(gs, 13) }
                 }
                 else {
-                    process_action(gs, Actions::UseAbility4)
+                    if !con.control { process_action(gs, Actions::UseAbility4) }
+                    else { describe_ability(gs, 3) }
                 }
             },
             VirtualKeyCode::Key5
             => {
                 if con.shift {
-                    process_action(gs, Actions::UseAbilityS5)
+                    if !con.control { process_action(gs, Actions::UseAbilityS5) }
+                    else { describe_ability(gs, 14) }
                 }
                 else {
-                    process_action(gs, Actions::UseAbility5)
+                    if !con.control { process_action(gs, Actions::UseAbility5) }
+                    else { describe_ability(gs, 4) }
                 }
             },
             VirtualKeyCode::Key6
             => {
                 if con.shift {
-                    process_action(gs, Actions::UseAbilityS6)
+                    if !con.control { process_action(gs, Actions::UseAbilityS6) }
+                    else { describe_ability(gs, 15) }
                 }
                 else {
-                    process_action(gs, Actions::UseAbility6)
+                    if !con.control { process_action(gs, Actions::UseAbility6) }
+                    else { describe_ability(gs, 5) }
                 }
             },
             VirtualKeyCode::Key7
             => {
                 if con.shift {
-                    process_action(gs, Actions::UseAbilityS7)
+                    if !con.control { process_action(gs, Actions::UseAbilityS7) }
+                    else { describe_ability(gs, 16) }
                 }
                 else {
-                    process_action(gs, Actions::UseAbility7)
+                    if !con.control { process_action(gs, Actions::UseAbility7) }
+                    else { describe_ability(gs, 6) }
                 }
             },
             VirtualKeyCode::Key8
             => {
                 if con.shift {
-                    process_action(gs, Actions::UseAbilityS8)
+                    if !con.control { process_action(gs, Actions::UseAbilityS8) }
+                    else { describe_ability(gs, 17) }
                 }
                 else {
-                    process_action(gs, Actions::UseAbility8)
+                    if !con.control { process_action(gs, Actions::UseAbility8) }
+                    else { describe_ability(gs, 7) }
                 }
             },
             VirtualKeyCode::Key9
             => {
                 if con.shift {
-                    process_action(gs, Actions::UseAbilityS9)
+                    if !con.control { process_action(gs, Actions::UseAbilityS9) }
+                    else { describe_ability(gs, 18) }
                 }
                 else {
-                    process_action(gs, Actions::UseAbility9)
+                    if !con.control { process_action(gs, Actions::UseAbility9) }
+                    else { describe_ability(gs, 8) }
                 }
             },
             VirtualKeyCode::Key0
             => {
                 if con.shift {
-                    process_action(gs, Actions::UseAbilityS0)
+                    if !con.control { process_action(gs, Actions::UseAbilityS0) }
+                    else { describe_ability(gs, 19) }
                 }
                 else {
-                    process_action(gs, Actions::UseAbility0)
+                    if !con.control { process_action(gs, Actions::UseAbility0) }
+                    else { describe_ability(gs, 9) }
                 }
             },
 
@@ -291,6 +311,16 @@ fn process_action(gs: &mut State, action: Actions) {
                 .add_part("=====================================================================================", ColorPair::new(WHITE,GREY10))
             );
             gs.logs.update_logs(LogMessage::new()
+                .add_part("You can also press", ColorPair::new(WHITE,GREY10))
+                .add_part("Control", ColorPair::new(YELLOW,GREY10))
+                .add_part("in conjunction with an ability key to see a description of what that ability does.", ColorPair::new(WHITE,GREY10))
+            );
+            gs.logs.update_logs(LogMessage::new()
+                .add_part("Press the corresponding", ColorPair::new(WHITE,GREY10))
+                .add_part("Numeric key", ColorPair::new(YELLOW,GREY10))
+                .add_part("to use abilities listed in the sidebar (plus Shift if there is an S next to the number).", ColorPair::new(WHITE,GREY10))
+            );
+            gs.logs.update_logs(LogMessage::new()
                 .add_part("Press", ColorPair::new(WHITE,GREY10))
                 .add_part("T", ColorPair::new(RED,GREY10))
                 .add_part("to cycle through visible targets.", ColorPair::new(WHITE,GREY10))
@@ -364,5 +394,27 @@ fn try_attack_player(gs: &mut State, dest: &mut Point) -> bool {
         true
     } else {
         false
+    }
+}
+
+fn describe_ability(gs: &mut State, ability_idx: usize) {
+    if ability_idx < gs.stored_abilities.len() {
+        let ability = &gs.stored_abilities[ability_idx];
+
+        gs.logs.update_logs(LogMessage::new()
+            .add_part("-------------------------------------------------------------------------------------", ColorPair::new(WHITE, GREY10))
+        );
+        gs.logs.update_logs(LogMessage::new()
+            .add_part(format! {"{}", get_ability_description(ability.ability)}, ColorPair::new(WHITE, GREY10))
+        );
+        gs.logs.update_logs(LogMessage::new()
+            .add_part(format! {"{}:", ability.name}, ColorPair::new(GOLD, GREY10))
+        );
+        gs.logs.update_logs(LogMessage::new()
+            .add_part("-------------------------------------------------------------------------------------", ColorPair::new(WHITE, GREY10))
+        );
+
+        gs.set_proc();
+        gs.set_refresh();
     }
 }

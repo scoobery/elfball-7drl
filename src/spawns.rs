@@ -29,10 +29,12 @@ pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u3
 }
 
 pub fn spawn_elf_pickup(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
-    let diceroll = rng.roll_dice(1, 2);
+    let diceroll = rng.roll_dice(1, 4);
     let member = match diceroll {
         1 => vec![make_bard()],
         2 => vec![make_guardian()],
+        3 => vec![make_barbarian()],
+        4 => vec![make_woodcutter()],
         _ => Vec::new()
     };
 
@@ -74,7 +76,30 @@ pub fn make_guardian() -> PartyMember {
         modifiers: Vec::new(),
     }
 }
-
+pub fn make_barbarian() -> PartyMember {
+    PartyMember {
+        name: format!("{}", make_random_elf_name()),
+        class: String::from("Barbarian"),
+        icon: Render::new(2, ColorPair::new(RED,BLACK), 255),
+        abilities: vec![],
+        health: Health::new(40),
+        attack: Attack::new(2,6),
+        threat: Threat::new(7, 2),
+        modifiers: Vec::new(),
+    }
+}
+pub fn make_woodcutter() -> PartyMember {
+    PartyMember {
+        name: format!("{}", make_random_elf_name()),
+        class: String::from("Woodcutter"),
+        icon: Render::new(2, ColorPair::new(DARK_GREEN,BLACK), 255),
+        abilities: vec![AbilityClass::new(Ability::Deforest)],
+        health: Health::new(18),
+        attack: Attack::new(1,8),
+        threat: Threat::new(2, 4),
+        modifiers: Vec::new(),
+    }
+}
 
 //Enemy member definitions
 pub fn enemy_make_forsaken_warrior() -> PartyMember {

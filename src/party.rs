@@ -102,6 +102,7 @@ impl Threat {
             self.current += self.gain + self.modifier;
         }
     }
+    pub fn add_threat (&mut self, num: u32) { self.current += num }
     pub fn set_modifier(&mut self, modifier: u32) { self.modifier = modifier }
     pub fn reset_modifier(&mut self) { self.modifier = 0 }
 }
