@@ -56,7 +56,7 @@ pub fn spawn_beast(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Objec
 }
 
 pub fn spawn_elf_pickup(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
-    let diceroll = rng.roll_dice(1, 6);
+    let diceroll = rng.roll_dice(1, 7);
     let member = match diceroll {
         1 => vec![make_bard()],
         2 => vec![make_guardian()],
@@ -64,6 +64,7 @@ pub fn spawn_elf_pickup(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> 
         4 => vec![make_woodcutter()],
         5 => vec![make_hunter()],
         6 => vec![make_cleric()],
+        7 => vec![make_mage()],
         _ => Vec::new()
     };
 
@@ -150,6 +151,18 @@ pub fn make_cleric() -> PartyMember {
         health: Health::new(10),
         attack: Attack::new(1,3),
         threat: Threat::new(8, 0),
+        modifiers: Vec::new(),
+    }
+}
+pub fn make_mage() -> PartyMember {
+    PartyMember {
+        name: format!("{}", make_random_elf_name()),
+        class: String::from("Mage"),
+        icon: Render::new(2, ColorPair::new(CYAN,BLACK), 255),
+        abilities: vec![AbilityClass::new(Ability::MagicMissile)],
+        health: Health::new(12),
+        attack: Attack::new(1,4),
+        threat: Threat::new(2, 2),
         modifiers: Vec::new(),
     }
 }

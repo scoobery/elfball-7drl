@@ -78,6 +78,7 @@ pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_de
         }
 
         object_party.remove(k.1);
+        object_party.shrink_to_fit();
 
         //Remove the whole object if the party is empty (but also not the player)
         if object_party.is_empty() {
