@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum ContextState {
-    InGame, GameMenu
+    InGame, GameOver
 }
 #[derive(Clone, Copy, PartialEq)]
 pub enum TurnState {
@@ -20,7 +20,10 @@ pub struct State {
     pub world: World,
     pub logs: LogBuffer,
     pub player_targets: TargetList,
-    pub stored_abilities: Vec<StoredAbility>
+    pub stored_abilities: Vec<StoredAbility>,
+    pub beast_kills: u32,
+    pub forsaken_kills: u32,
+    pub rescued_elves: u32
 }
 impl State {
     pub fn init() -> State {
@@ -55,7 +58,10 @@ impl State {
            world: World::new_game(),
            logs,
            player_targets: TargetList::new(),
-           stored_abilities: Vec::new()
+           stored_abilities: Vec::new(),
+           beast_kills: 0,
+           forsaken_kills: 0,
+           rescued_elves: 0
        }
     }
 
@@ -75,13 +81,16 @@ impl State {
 impl GameState for State {
     fn tick(&mut self, con: &mut BTerm) {
         if self.turn_state == TurnState::Player { player_input(self, con) }
-        else if self.turn_state == TurnState::GameOver { /*Do the other thing once it's ready*/ }
+        else if self.turn_state == TurnState::GameOver {
+            self.status = ContextState::GameOver;
+            player_input(self, con);
+        }
 
         match self.status {
-            ContextState::GameMenu => {}
             ContextState::InGame => {
                 exec_all_systems(self);
             }
+            _ => {}
         }
 
         if self.refresh {
@@ -109,12 +118,13 @@ fn exec_all_systems(gs: &mut State) {
 
         //Execute the systems and shit
         process_fov(&mut gs.world.objects, &mut gs.world.map);
-        process_combat(&mut gs.world.objects, &mut gs.logs, &mut gs.player_death, &mut gs.player_targets, &gs.world.map);
+        process_combat(&mut gs.world.objects, &mut gs.logs, &mut gs.player_death, &mut gs.player_targets, &gs.world.map, &mut gs.forsaken_kills, &mut gs.beast_kills);
         update_blocked_tiles(&mut gs.world.objects, &mut gs.world.map, gs.world.depth);
         check_player_collisions(gs);
 
         if gs.passed_turn {
             process_all_cooldowns(&mut gs.world.objects);
+            reset_attack_capabilities(&mut gs.world.objects[0].members);
             gs.turn_state = TurnState::AI;
             gs.passed_turn = false;
             process_fov(&mut gs.world.objects, &mut gs.world.map);
@@ -123,7 +133,7 @@ fn exec_all_systems(gs: &mut State) {
         if gs.turn_state == TurnState::AI {
             process_ai(&mut gs.world.objects, &mut gs.world.map, gs.world.depth, &mut gs.world.rng, &mut gs.logs);
             process_fov(&mut gs.world.objects, &mut gs.world.map);
-            process_combat(&mut gs.world.objects, &mut gs.logs, &mut gs.player_death, &mut gs.player_targets, &gs.world.map);
+            process_combat(&mut gs.world.objects, &mut gs.logs, &mut gs.player_death, &mut gs.player_targets, &gs.world.map, &mut gs.forsaken_kills, &mut gs.beast_kills);
             update_blocked_tiles(&mut gs.world.objects, &mut gs.world.map, gs.world.depth);
             gs.turn_state = TurnState::Player;
         }
@@ -166,7 +176,7 @@ impl World {
         let camera = Camera::new(map.starting_pos.clone());
         objects.push(spawn_player(map.starting_pos.clone()));
 
-        for _ in 1..=12 {
+        for _ in 1..=10 {
             let max_roll = map.valid_spawns.len() - 1;
             let index = rng.range(0, max_roll);
             let pos = map.valid_spawns[index].clone();
@@ -203,13 +213,16 @@ impl World {
         self.objects[0].viewshed.as_mut().unwrap().refresh = true;
         self.objects[0].floor = self.depth;
 
-        for _ in 1..=10 + (2 * self.depth) {
-            let max_roll = new_map.valid_spawns.len() - 1;
-            let index = self.rng.range(0, max_roll);
-            let pos = new_map.valid_spawns[index].clone();
-            self.objects.push(spawn_band_of_forsaken(&mut self.rng, pos, self.depth));
-            new_map.valid_spawns.remove(index);
+        let mut num_forsaken = 10;
+        let mut num_beasts = 0;
+        if self.depth % 2 == 0 {
+            num_forsaken += self.depth / 2;
         }
+        if self.depth % 3 == 0 {
+            num_forsaken -= self.depth / 3;
+            num_beasts += self.depth / 3;
+        }
+
 
         for _ in 1..=3 {
             let max_roll = new_map.valid_spawns.len() - 1;
@@ -217,6 +230,26 @@ impl World {
             let pos = new_map.valid_spawns[index].clone();
             self.objects.push(spawn_elf_pickup(&mut self.rng, pos, self.depth));
             new_map.valid_spawns.remove(index);
+        }
+
+        for _ in 1..=num_beasts {
+            let max_roll = new_map.valid_spawns.len() - 1;
+            if max_roll > 16 {
+                let index = self.rng.range(0, max_roll);
+                let pos = new_map.valid_spawns[index].clone();
+                self.objects.push(spawn_beast(&mut self.rng, pos, self.depth));
+                new_map.valid_spawns.remove(index);
+            }
+        }
+
+        for _ in 1..=num_forsaken {
+            let max_roll = new_map.valid_spawns.len() - 1;
+            if max_roll > 16 {
+                let index = self.rng.range(0, max_roll);
+                let pos = new_map.valid_spawns[index].clone();
+                self.objects.push(spawn_band_of_forsaken(&mut self.rng, pos, self.depth));
+                new_map.valid_spawns.remove(index);
+            }
         }
 
         self.map = new_map;

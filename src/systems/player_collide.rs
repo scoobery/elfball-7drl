@@ -40,6 +40,7 @@ pub fn check_player_collisions(gs: &mut State) {
                     .add_part(format!("{}, the {}", e.name, e.class), ColorPair::new(e.icon.get_render().1.fg, GREY10))
                     .add_part("has joined the party!", ColorPair::new(WHITE, GREY10))
                 );
+                gs.rescued_elves += 1;
             }
         }
         for r in remove_list.iter() {

@@ -9,7 +9,7 @@ impl TargetedAttack {
     pub fn new(target: (usize, usize), damage: i32) -> TargetedAttack { TargetedAttack { target, damage } }
 }
 
-pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_death: &mut bool, player_targets: &mut TargetList, map: &Map) {
+pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_death: &mut bool, player_targets: &mut TargetList, map: &Map, fkills: &mut u32, bkills: &mut u32) {
     let mut attack_list: Vec<(usize, TargetedAttack)> = Vec::new();
     let mut kill_list: Vec<(usize, usize)> = Vec::new();
     let mut refresh_targets = false;
@@ -55,6 +55,13 @@ pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_de
             .add_part("has been slain.", ColorPair::new(WHITE, GREY10))
         );
 
+        if object_party[k.1].class == "Beast" {
+            *bkills += 1
+        }
+        else {
+            *fkills += 1
+        }
+
         object_party.remove(k.1);
 
         //Remove the whole object if the party is empty (but also not the player)
@@ -90,6 +97,11 @@ pub fn process_combat(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_de
     if refresh_targets { player_targets.reset_targets(objects, map) }
 }
 
+pub fn reset_attack_capabilities(members: &mut Vec<PartyMember>) {
+    for member in members.iter_mut() {
+        member.attack.enable_attack();
+    }
+}
 
 pub fn process_all_cooldowns(objects: &mut Vec<Object>) {
     for obj in objects.iter_mut() {

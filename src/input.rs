@@ -14,7 +14,18 @@ pub enum Actions {
 pub fn player_input(gs: &mut State, con: &BTerm) {
     match gs.status {
         ContextState::InGame => ingame_input(gs, con),
-        _ => {}
+        ContextState::GameOver => game_over_input(gs, con),
+    }
+}
+
+fn game_over_input(gs: &mut State, con: &BTerm) {
+    if let Some(key) = con.key {
+        match key {
+            VirtualKeyCode::Return | VirtualKeyCode::NumpadEnter => {
+                *gs = State::init()
+            },
+            _ => {}
+        }
     }
 }
 

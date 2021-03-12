@@ -4,7 +4,9 @@ pub fn render_loop(gs: &State, con: &mut BTerm) {
     con.cls();
     render_draw_buffer(con).expect("Failed to render");
     match gs.status {
-        ContextState::GameMenu => {}
+        ContextState::GameOver => {
+            batch_game_over_message(gs);
+        }
         ContextState::InGame => {
             batch_map_draws(&gs.world.map, &gs.world.camera);
             batch_entity_draws(&gs.world.objects, &gs.world.map, &gs.world.camera, gs.world.depth, gs.player_targets.get_current_target());
@@ -12,6 +14,28 @@ pub fn render_loop(gs: &State, con: &mut BTerm) {
         }
     }
     render_draw_buffer(con).expect("Failed to render");
+}
+
+fn batch_game_over_message(gs: &State) {
+    let mut bg_batch = DrawBatch::new();
+    let mut txt_batch = DrawBatch::new();
+    bg_batch.target(MAP_CON);
+    txt_batch.target(TEXT_CON);
+
+    bg_batch.fill_region(Rect::with_exact(0,0,CONSOLE_W * 2, CONSOLE_H), ColorPair::new(BLACK, BLACK), 0);
+
+    let message_region = Rect::with_exact(CONSOLE_W - 30, 20, CONSOLE_W + 30, 40);
+    txt_batch.draw_double_box(message_region, ColorPair::new(BLACK, RED));
+    txt_batch.print_color_centered_at(Point::new(message_region.x1 + message_region.width()/2, message_region.y1), "GAME OVER", ColorPair::new(BLACK, RED));
+    txt_batch.print_centered_at(Point::new(message_region.x1 + message_region.width()/2, message_region.y1 + 2), "Your party has been wiped out.");
+    txt_batch.print_centered_at(Point::new(message_region.x1 + message_region.width()/2, message_region.y1 + 5), format!("You ventured {} levels deep into the forest.", gs.world.depth));
+    txt_batch.print_centered_at(Point::new(message_region.x1 + message_region.width()/2, message_region.y1 + 6), format!("You killed {} Forsaken elves.", gs.forsaken_kills));
+    txt_batch.print_centered_at(Point::new(message_region.x1 + message_region.width()/2, message_region.y1 + 7), format!("You killed {} forgotten beasts.", gs.beast_kills));
+    txt_batch.print_centered_at(Point::new(message_region.x1 + message_region.width()/2, message_region.y1 + 8), format!("You rescued {} fellow elves.", gs.rescued_elves));
+    txt_batch.print_color_centered_at(Point::new(message_region.x1 + message_region.width()/2, message_region.y2 - 2), "Press ENTER to start a new game.", ColorPair::new(LIME_GREEN, BLACK));
+
+    bg_batch.submit(0).expect("Failed to batch game over draw");
+    txt_batch.submit(1).expect("Failed to batch game over draw");
 }
 
 //Adds all map tiles to the rendering batch.

@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use std::cmp::min;
 
 pub fn spawn_player(pos: Point) -> Object {
     Object {
@@ -14,7 +15,7 @@ pub fn spawn_player(pos: Point) -> Object {
 }
 
 pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
-    let num_enemies = rng.range(f, (2 * f) + 1);
+    let num_enemies = rng.range(f, min(f + 2, 5));
     Object {
         name: String::from("band of Forsaken Warriors"),
         floor: f,
@@ -28,8 +29,34 @@ pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u3
     }
 }
 
+pub fn spawn_beast(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
+    let hp_mod = 10 * f as i32;
+    Object {
+        name: String::from("Forgotten Beast"),
+        floor: f,
+        tag: ActorTag::Enemy,
+        pos: Some(pos),
+        render: Some(Render::new(98, ColorPair::new(RED, BLACK), 255)),
+        viewshed: Some(Viewshed { range: 9, visible: Vec::new(), refresh: true }),
+        members: vec![
+            PartyMember {
+                name: make_beast_name(rng),
+                class: String::from("Beast"),
+                icon: Render::new(98, ColorPair::new(RED,BLACK), 255),
+                abilities: vec![],
+                health: Health::new(30 + hp_mod),
+                attack: Attack::new(4,4),
+                threat: Threat::new(12, 10),
+                modifiers: vec![Modifier::new(ModifierEffect::Block(2), 0, true)],
+            }
+        ],
+        ai: Some(AIClass::new()),
+        ..Default::default()
+    }
+}
+
 pub fn spawn_elf_pickup(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
-    let diceroll = rng.roll_dice(1, 4);
+    let diceroll = rng.roll_dice(1, 6);
     let member = match diceroll {
         1 => vec![make_bard()],
         2 => vec![make_guardian()],
@@ -72,9 +99,9 @@ pub fn make_guardian() -> PartyMember {
         class: String::from("Guardian"),
         icon: Render::new(2, ColorPair::new(STEEL_BLUE,BLACK), 255),
         abilities: vec![AbilityClass::new(Ability::Taunt), AbilityClass::new(Ability::Block)],
-        health: Health::new(30),
+        health: Health::new(35),
         attack: Attack::new(1,6),
-        threat: Threat::new(6, 1),
+        threat: Threat::new(6, 3),
         modifiers: Vec::new(),
     }
 }
@@ -84,7 +111,7 @@ pub fn make_barbarian() -> PartyMember {
         class: String::from("Barbarian"),
         icon: Render::new(2, ColorPair::new(RED,BLACK), 255),
         abilities: vec![],
-        health: Health::new(40),
+        health: Health::new(28),
         attack: Attack::new(2,6),
         threat: Threat::new(7, 2),
         modifiers: Vec::new(),
@@ -139,4 +166,38 @@ pub fn enemy_make_forsaken_warrior() -> PartyMember {
         threat: Threat::new(4, 2),
         modifiers: Vec::new(),
     }
+}
+
+
+fn make_beast_name(rng: &mut RandomNumberGenerator) -> String {
+    let rand1 = rng.roll_dice(1, 101);
+    let rand2 = rng.roll_dice(1, 101);
+
+    let string1 =
+        if rand1 >= 1 && rand1 <= 10 { "Ik" }
+        else if rand1 >= 11 && rand1 <= 20 { "Mul" }
+        else if rand1 >= 21 && rand1 <= 30 { "Kar" }
+        else if rand1 >= 31 && rand1 <= 40 { "Than" }
+        else if rand1 >= 41 && rand1 <= 50 { "Rom" }
+        else if rand1 >= 51 && rand1 <= 60 { "Ga" }
+        else if rand1 >= 61 && rand1 <= 70 { "Ki" }
+        else if rand1 >= 71 && rand1 <= 80 { "Nar" }
+        else if rand1 >= 81 && rand1 <= 90 { "Gen" }
+        else if rand1 >= 91 && rand1 <= 100 { "Att" }
+        else {"!!!"};
+
+    let string2 =
+        if rand2 >= 1 && rand2 <= 10 { "tar" }
+        else if rand2 >= 11 && rand2 <= 20 { "dros" }
+        else if rand2 >= 21 && rand2 <= 30 { "gor" }
+        else if rand2 >= 31 && rand2 <= 40 { "har" }
+        else if rand2 >= 41 && rand2 <= 50 { "kem" }
+        else if rand2 >= 51 && rand2 <= 60 { "gol" }
+        else if rand2 >= 61 && rand2 <= 70 { "ra" }
+        else if rand2 >= 71 && rand2 <= 80 { "tan" }
+        else if rand2 >= 81 && rand2 <= 90 { "vek" }
+        else if rand2 >= 91 && rand2 <= 100 { "kas" }
+        else {"!!!"};
+
+    return String::from(format!("{}{}", string1, string2))
 }
