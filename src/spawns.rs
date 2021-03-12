@@ -8,7 +8,7 @@ pub fn spawn_player(pos: Point) -> Object {
         pos: Some(pos),
         render: Some(Render::new(64, ColorPair::new(GOLD1, BLACK), 255)),
         viewshed: Some(Viewshed { range: 6, visible: Vec::new(), refresh: true }),
-        members: vec![make_guardian(), make_bard()],
+        members: vec![make_guardian(), make_hunter()],
         ..Default::default()
     }
 }
@@ -35,6 +35,8 @@ pub fn spawn_elf_pickup(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> 
         2 => vec![make_guardian()],
         3 => vec![make_barbarian()],
         4 => vec![make_woodcutter()],
+        5 => vec![make_hunter()],
+        6 => vec![make_cleric()],
         _ => Vec::new()
     };
 
@@ -97,6 +99,30 @@ pub fn make_woodcutter() -> PartyMember {
         health: Health::new(18),
         attack: Attack::new(1,8),
         threat: Threat::new(2, 4),
+        modifiers: Vec::new(),
+    }
+}
+pub fn make_hunter() -> PartyMember {
+    PartyMember {
+        name: format!("{}", make_random_elf_name()),
+        class: String::from("Hunter"),
+        icon: Render::new(2, ColorPair::new(SEA_GREEN,BLACK), 255),
+        abilities: vec![AbilityClass::new(Ability::KillShot)],
+        health: Health::new(16),
+        attack: Attack::new(1,6),
+        threat: Threat::new(1, 3),
+        modifiers: Vec::new(),
+    }
+}
+pub fn make_cleric() -> PartyMember {
+    PartyMember {
+        name: format!("{}", make_random_elf_name()),
+        class: String::from("Cleric"),
+        icon: Render::new(2, ColorPair::new(WHITE,BLACK), 255),
+        abilities: vec![AbilityClass::new(Ability::CureWounds)],
+        health: Health::new(10),
+        attack: Attack::new(1,3),
+        threat: Threat::new(8, 0),
         modifiers: Vec::new(),
     }
 }

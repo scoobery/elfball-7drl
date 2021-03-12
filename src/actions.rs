@@ -108,7 +108,7 @@ pub fn get_ability_description(ability: Ability) -> String {
         Ability::CureWounds => String::from("Heals the most injured party member for 3d4 hit points."),
         Ability::LesserCureWounds => String::from("Heals the most injured party member for 2d3 hit points."),
         Ability::RallyingCry => String::from("Gives all elves in the party +1 damage to their attacks for 5 turns."),
-        Ability::KillShot => String::from("A ranged shot that targets the most injured member of the target party."),
+        Ability::KillShot => String::from("A ranged shot that targets the most injured member of the target party, dealing 2d6 damage."),
         Ability::Deforest => String::from("Chops down all trees directly adjacent to the party."),
         Ability::Block => String::from("Blocks 5 damage from enemy attacks for the next 2 turns.")
     }
@@ -116,16 +116,16 @@ pub fn get_ability_description(ability: Ability) -> String {
 
 pub fn handle_abilities(objects: &mut Vec<Object>, map: &mut Map, ability: &mut StoredAbility, rng: &mut RandomNumberGenerator, logs: &mut LogBuffer, target: Option<usize>) {
     if !ability.is_on_cooldown() {
-        match ability.ability {
+        let success = match ability.ability {
             Ability::Taunt => run_taunt(&mut objects[ability.source_obj].members[ability.source_member], logs),
             Ability::Block => run_block(&mut objects[ability.source_obj].members[ability.source_member], logs),
             Ability::CureWounds => run_cure_wounds(&mut objects[ability.source_obj].members, ability.source_member, rng, logs, false),
             Ability::LesserCureWounds => run_cure_wounds(&mut objects[ability.source_obj].members, ability.source_member, rng, logs, true),
             Ability::RallyingCry => run_rallying_cry(&mut objects[ability.source_obj].members, ability.source_member, logs),
-            Ability::KillShot => {}
+            Ability::KillShot => run_killshot(objects, target, (ability.source_obj, ability.source_member), logs, rng),
             Ability::Deforest => run_deforest(objects[ability.source_obj].pos.as_ref().unwrap(), map),
-        }
-        ability.set_source_on_cooldown(objects);
+        };
+        if success { ability.set_source_on_cooldown(objects); }
     }
     else {
         logs.update_logs(LogMessage::new()
@@ -136,22 +136,24 @@ pub fn handle_abilities(objects: &mut Vec<Object>, map: &mut Map, ability: &mut 
     if let Some(view) = &mut objects[ability.source_obj].viewshed { view.refresh = true; }
 }
 
-fn run_taunt(member: &mut PartyMember, logs: &mut LogBuffer) {
+fn run_taunt(member: &mut PartyMember, logs: &mut LogBuffer) -> bool {
     member.modifiers.push(Modifier::new(ModifierEffect::PlusThreat(10), 5, false));
     logs.update_logs(LogMessage::new()
         .add_part(format!("{}",member.name), ColorPair::new(member.icon.get_render().1.fg, GREY10))
         .add_part("lets out a threatening shout, taunting enemies to attack them!", ColorPair::new(WHITE, GREY10))
     );
+    return true
 }
-fn run_block(member: &mut PartyMember, logs: &mut LogBuffer) {
+fn run_block(member: &mut PartyMember, logs: &mut LogBuffer) -> bool {
     member.modifiers.push(Modifier::new(ModifierEffect::Block(5), 2, false));
     logs.update_logs(LogMessage::new()
         .add_part(format!("{}",member.name), ColorPair::new(member.icon.get_render().1.fg, GREY10))
         .add_part("raises their shield, blocking the enemies' blows!", ColorPair::new(WHITE, GREY10))
     );
     member.attack.disable_attack();
+    return true
 }
-fn run_rallying_cry(members: &mut Vec<PartyMember>, caster: usize, logs: &mut LogBuffer) {
+fn run_rallying_cry(members: &mut Vec<PartyMember>, caster: usize, logs: &mut LogBuffer) -> bool {
     for member in members.iter_mut() {
         member.modifiers.push(Modifier::new(ModifierEffect::PlusAttack(1), 5, false));
     }
@@ -161,8 +163,10 @@ fn run_rallying_cry(members: &mut Vec<PartyMember>, caster: usize, logs: &mut Lo
         .add_part("lets out a rallying cry, bolstering the party's morale!", ColorPair::new(WHITE, GREY10))
     );
     members[caster].threat.add_threat(5);
+
+    return true
 }
-fn run_cure_wounds(members: &mut Vec<PartyMember>, caster_id: usize, rng: &mut RandomNumberGenerator, logs: &mut LogBuffer, lesser: bool) {
+fn run_cure_wounds(members: &mut Vec<PartyMember>, caster_id: usize, rng: &mut RandomNumberGenerator, logs: &mut LogBuffer, lesser: bool) -> bool {
     let health_list = {
         let mut vec = members.iter().enumerate()
             .map(|(i, m)| (i, m.health.get_max() - m.health.get_life()))
@@ -184,9 +188,11 @@ fn run_cure_wounds(members: &mut Vec<PartyMember>, caster_id: usize, rng: &mut R
     );
 
     members[caster_id].attack.disable_attack();
+
+    return true
 }
 
-fn run_deforest(source_pos: &Point, map: &mut Map) {
+fn run_deforest(source_pos: &Point, map: &mut Map) -> bool {
     let neighbor_list = {
         let mut vec = Vec::new();
         //let mut second_vec = Vec::new();
@@ -208,7 +214,58 @@ fn run_deforest(source_pos: &Point, map: &mut Map) {
         .map(|i| map.point2d_to_index(*i))
         .collect::<Vec<usize>>();
 
+    let mut treecount = 0;
     for idx in idx_list.into_iter() {
-        if map.tiles[idx] == TileClass::Tree { map.tiles[idx] = TileClass::ForestFloor }
+        if map.tiles[idx] == TileClass::Tree {
+            map.tiles[idx] = TileClass::ForestFloor;
+            treecount += 1;
+        }
     }
+
+    return if treecount > 0 { true } else { false }
+}
+
+fn run_killshot(objects: &mut Vec<Object>, target: Option<usize>, source_ids: (usize, usize), logs: &mut LogBuffer, rng: &mut RandomNumberGenerator) -> bool {
+    if target.is_none() {
+        logs.update_logs(LogMessage::new()
+            .add_part("That ability needs a target!", ColorPair::new(WHITE, GREY10))
+        );
+        return false
+    }
+
+    let amt = rng.roll_dice(2, 6);
+    let mut idx = 0;
+    {
+        let obj = &mut objects[target.unwrap()];
+
+        if obj.tag != ActorTag::Enemy || obj.members.is_empty() {
+            logs.update_logs(LogMessage::new()
+                .add_part("Why would you want to do that?", ColorPair::new(WHITE, GREY10))
+            );
+            return false
+        }
+
+        let health_list = {
+            let mut vec = obj.members.iter().enumerate()
+                .map(|(i, m)| (i, m.health.get_max() - m.health.get_life()))
+                .collect::<Vec<(usize, i32)>>();
+            vec.sort_by(|a, b| b.1.cmp(&a.1));
+            vec
+        };
+        idx = health_list[0].0;
+        obj.members[idx].health.lose_life(amt);
+    }
+    logs.update_logs(LogMessage::new()
+        .add_part(format!("{}", objects[source_ids.0].members[source_ids.1].name), ColorPair::new(objects[source_ids.0].members[source_ids.1].icon.get_render().1.fg, GREY10))
+        .add_part("fires a deadly shot at", ColorPair::new(WHITE, GREY10))
+        .add_part(format!("{}", objects[target.unwrap()].members[idx].name), ColorPair::new(objects[target.unwrap()].members[idx].icon.get_render().1.fg, GREY10))
+        .add_part("for", ColorPair::new(WHITE, GREY10))
+        .add_part(format!("{}", amt), ColorPair::new(GOLD, GREY10))
+        .add_part("damage.", ColorPair::new(WHITE, GREY10))
+    );
+
+    objects[source_ids.0].members[source_ids.1].attack.disable_attack();
+    objects[source_ids.0].members[source_ids.1].threat.add_threat(30);
+
+    return true
 }
