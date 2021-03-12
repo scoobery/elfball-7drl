@@ -93,7 +93,7 @@ pub fn get_ability_cooldown(ability: Ability) -> i32 {
     match ability {
         Ability::Taunt => 10,
         Ability::Block => 10,
-        Ability::CureWounds => 5,
+        Ability::CureWounds => 15,
         Ability::LesserCureWounds => 15,
         Ability::RallyingCry => 15,
         Ability::KillShot => 20,
@@ -107,8 +107,8 @@ pub fn handle_abilities(objects: &mut Vec<Object>, map: &mut Map, ability: &mut 
         match ability.ability {
             Ability::Taunt => run_taunt(&mut objects[ability.source_obj].members[ability.source_member], logs),
             Ability::Block => run_block(&mut objects[ability.source_obj].members[ability.source_member], logs),
-            Ability::CureWounds => run_cure_wounds(&mut objects[ability.source_obj].members, ability.source_member, rng, logs),
-            Ability::LesserCureWounds => run_cure_wounds(&mut objects[ability.source_obj].members, ability.source_member, rng, logs),
+            Ability::CureWounds => run_cure_wounds(&mut objects[ability.source_obj].members, ability.source_member, rng, logs, false),
+            Ability::LesserCureWounds => run_cure_wounds(&mut objects[ability.source_obj].members, ability.source_member, rng, logs, true),
             Ability::RallyingCry => {}
             Ability::KillShot => {}
             Ability::Deforest => run_deforest(objects[ability.source_obj].pos.as_ref().unwrap(), map),
@@ -139,15 +139,16 @@ fn run_block(member: &mut PartyMember, logs: &mut LogBuffer) {
     );
     member.attack.disable_attack();
 }
-fn run_cure_wounds(members: &mut Vec<PartyMember>, caster_id: usize, rng: &mut RandomNumberGenerator, logs: &mut LogBuffer) {
+fn run_cure_wounds(members: &mut Vec<PartyMember>, caster_id: usize, rng: &mut RandomNumberGenerator, logs: &mut LogBuffer, lesser: bool) {
     let health_list = {
         let mut vec = members.iter().enumerate()
-            .map(|(i, m)| (i, m.health.get_life()))
+            .map(|(i, m)| (i, m.health.get_max() - m.health.get_life()))
             .collect::<Vec<(usize, i32)>>();
         vec.sort_by(|a,b| b.1.cmp(&a.1));
         vec
     };
-    let amt = rng.roll_dice(3,4);
+    let amt = if !lesser { rng.roll_dice(3,4) }
+        else{ rng.roll_dice(2, 3) };
     members[health_list[0].0].health.gain_life(amt);
 
     logs.update_logs(LogMessage::new()
@@ -158,6 +159,8 @@ fn run_cure_wounds(members: &mut Vec<PartyMember>, caster_id: usize, rng: &mut R
         .add_part(format!("{}", amt), ColorPair::new(GOLD, GREY10))
         .add_part("HP.", ColorPair::new(WHITE, GREY10))
     );
+
+    members[caster_id].attack.disable_attack();
 }
 
 fn run_deforest(source_pos: &Point, map: &mut Map) {

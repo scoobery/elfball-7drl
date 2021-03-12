@@ -179,12 +179,29 @@ fn batch_ui_draws(objects: &Vec<Object>, logs: &LogBuffer, abilities: &Vec<Store
         let mut xptr = ability_box.x1;
         let mut yptr = ability_box.y1;
         for (i, ability) in abilities.iter().enumerate() {
-            txt_batch.print_color(Point::new(xptr, yptr), format!("({})", i + 1), ColorPair::new(GOLD, BLACK));
-            txt_batch.print_color(Point::new(xptr + 4, yptr), format!("{}", ability.name), ColorPair::new(WHITE, BLACK));
+            let ability_color = if ability.is_on_cooldown() { GREY30 } else { WHITE };
+            let (x_add, num_txt): (i32, String) = match i {
+                0|1|2|3|4|5|6|7|8 => (3, format!("({})", i + 1)),
+                9 => (3, String::from("(0)",)),
+                10|11|12|13|14|15|16|17|18 => (4, format!("(S{})", i - 9)),
+                19 => (4, String::from("(S0)")),
+                _ => (0, String::from(""))
+            };
+            let name_trunc = {
+                let mut st = String::from(&objects[0].members[ability.source_member].name);
+                st.truncate(2);
+                st.push('.');
+                st
+            };
+            let name_color = ColorPair::new(objects[0].members[ability.source_member].icon.get_render().1.fg, BLACK);
+
+            txt_batch.print_color(Point::new(xptr, yptr), num_txt, ColorPair::new(GOLD, BLACK));
+            txt_batch.print_color(Point::new(xptr + x_add, yptr), format!(" {}", name_trunc), name_color);
+            txt_batch.print_color(Point::new(xptr + x_add + 5, yptr), format!("{}", ability.name), ColorPair::new(ability_color, BLACK));
 
             if yptr >= ability_box.y2 - 1 {
                 yptr = ability_box.y1;
-                xptr += 12;
+                xptr += 18;
             }
             else {
                 yptr += 1;

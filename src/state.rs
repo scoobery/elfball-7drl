@@ -132,6 +132,7 @@ fn exec_all_systems(gs: &mut State) {
         update_targets_in_vision(gs);
 
         clean_party_modifiers(&mut gs.world.objects[0].members);
+        gs.refresh_stored_abilities();
 
         if gs.player_death {
             gs.turn_state = TurnState::GameOver;
