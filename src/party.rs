@@ -75,6 +75,7 @@ pub struct Attack {
 }
 impl Attack {
     pub fn new(num: i32, d: i32) -> Attack { Attack { damage: (num,d), modifier: 0, able_to_attack: true } }
+    pub fn get_damage_dice(&self) -> String { return format!("{}d{}", self.damage.0, self.damage.1) }
     pub fn roll_for_damage(&self, rng: &mut RandomNumberGenerator) -> i32 { return rng.roll_dice(self.damage.0, self.damage.1) + self.modifier }
     pub fn set_modifier(&mut self, modifier: i32) { self.modifier = modifier }
     pub fn reset_modifier(&mut self) { self.modifier = 0 }

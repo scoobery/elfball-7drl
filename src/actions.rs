@@ -92,13 +92,13 @@ pub fn get_ability_name(ability: Ability) -> String {
 
 pub fn get_ability_cooldown(ability: Ability) -> i32 {
     match ability {
-        Ability::Taunt => 10,
+        Ability::Taunt => 15,
         Ability::Block => 10,
-        Ability::CureWounds => 15,
+        Ability::CureWounds => 20,
         Ability::LesserCureWounds => 15,
-        Ability::RallyingCry => 15,
-        Ability::KillShot => 20,
-        Ability::Deforest => 16,
+        Ability::RallyingCry => 20,
+        Ability::KillShot => 30,
+        Ability::Deforest => 15,
     }
 }
 

@@ -61,7 +61,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
 
             VirtualKeyCode::Key1
             => {
-                if con.shift {
+                if con.shift || con.alt {
                     if !con.control { process_action(gs, Actions::UseAbilityS1) }
                     else { describe_ability(gs, 10) }
                 }
@@ -72,7 +72,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             },
             VirtualKeyCode::Key2
             => {
-                if con.shift {
+                if con.shift || con.alt{
                     if !con.control { process_action(gs, Actions::UseAbilityS2) }
                     else { describe_ability(gs, 11) }
                 }
@@ -83,7 +83,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             },
             VirtualKeyCode::Key3
             => {
-                if con.shift {
+                if con.shift || con.alt{
                     if !con.control { process_action(gs, Actions::UseAbilityS3) }
                     else { describe_ability(gs, 12) }
                 }
@@ -94,7 +94,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             },
             VirtualKeyCode::Key4
             => {
-                if con.shift {
+                if con.shift || con.alt{
                     if !con.control { process_action(gs, Actions::UseAbilityS4) }
                     else { describe_ability(gs, 13) }
                 }
@@ -105,7 +105,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             },
             VirtualKeyCode::Key5
             => {
-                if con.shift {
+                if con.shift || con.alt{
                     if !con.control { process_action(gs, Actions::UseAbilityS5) }
                     else { describe_ability(gs, 14) }
                 }
@@ -116,7 +116,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             },
             VirtualKeyCode::Key6
             => {
-                if con.shift {
+                if con.shift || con.alt{
                     if !con.control { process_action(gs, Actions::UseAbilityS6) }
                     else { describe_ability(gs, 15) }
                 }
@@ -127,7 +127,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             },
             VirtualKeyCode::Key7
             => {
-                if con.shift {
+                if con.shift || con.alt{
                     if !con.control { process_action(gs, Actions::UseAbilityS7) }
                     else { describe_ability(gs, 16) }
                 }
@@ -138,7 +138,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             },
             VirtualKeyCode::Key8
             => {
-                if con.shift {
+                if con.shift || con.alt{
                     if !con.control { process_action(gs, Actions::UseAbilityS8) }
                     else { describe_ability(gs, 17) }
                 }
@@ -149,7 +149,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             },
             VirtualKeyCode::Key9
             => {
-                if con.shift {
+                if con.shift || con.alt{
                     if !con.control { process_action(gs, Actions::UseAbilityS9) }
                     else { describe_ability(gs, 18) }
                 }
@@ -160,7 +160,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             },
             VirtualKeyCode::Key0
             => {
-                if con.shift {
+                if con.shift || con.alt{
                     if !con.control { process_action(gs, Actions::UseAbilityS0) }
                     else { describe_ability(gs, 19) }
                 }
@@ -329,7 +329,7 @@ fn process_action(gs: &mut State, action: Actions) {
             gs.logs.update_logs(LogMessage::new()
                 .add_part("Press the corresponding", ColorPair::new(WHITE,GREY10))
                 .add_part("Numeric key", ColorPair::new(YELLOW,GREY10))
-                .add_part("to use abilities listed in the sidebar (plus Shift if there is an S next to the number).", ColorPair::new(WHITE,GREY10))
+                .add_part("to use abilities listed in the sidebar (plus Shift or Alt if there is an S next to the number).", ColorPair::new(WHITE,GREY10))
             );
             gs.logs.update_logs(LogMessage::new()
                 .add_part("Press", ColorPair::new(WHITE,GREY10))

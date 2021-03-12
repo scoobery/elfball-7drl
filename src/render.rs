@@ -174,8 +174,10 @@ fn batch_ui_draws(objects: &Vec<Object>, logs: &LogBuffer, abilities: &Vec<Store
             txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 2), format!("HP: {}/{}", member.health.get_life(), member.health.get_max()), health_color);
 
             let threat_color = get_threat_color(threat_table[i]);
-            if threat_table[i] > 0 { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), format!("Threat: #{}", threat_table[i]), threat_color); }
-            else { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), "Threat: N/A", threat_color); }
+            if threat_table[i] > 0 { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 4), format!("Threat: #{}", threat_table[i]), threat_color); }
+            else { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 4), "Threat: N/A", threat_color); }
+
+            txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), format!("Dmg: {}", member.attack.get_damage_dice()), ColorPair::new(GOLD,BLACK));
         }
     }
     {
@@ -194,8 +196,10 @@ fn batch_ui_draws(objects: &Vec<Object>, logs: &LogBuffer, abilities: &Vec<Store
                 txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 2), format!("HP: {}/{}", member.health.get_life(), member.health.get_max()), health_color);
 
                 let threat_color = get_threat_color(threat_table[i]);
-                if threat_table[i] > 0 { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), format!("Threat: #{}", threat_table[i]), threat_color); }
-                else { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), "Threat: N/A", threat_color); }
+                if threat_table[i] > 0 { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 4), format!("Threat: #{}", threat_table[i]), threat_color); }
+                else { txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 4), "Threat: N/A", threat_color); }
+
+                txt_batch.print_color(Point::new(sbox.x1, sbox.y1 + 3), format!("Dmg: {}", member.attack.get_damage_dice()), ColorPair::new(GOLD,BLACK));
             }
         }
     }

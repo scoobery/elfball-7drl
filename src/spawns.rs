@@ -23,7 +23,7 @@ pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u3
         pos: Some(pos),
         render: Some(Render::new(1, ColorPair::new(PURPLE,BLACK), 255)),
         viewshed: Some(Viewshed { range: 6, visible: Vec::new(), refresh: true }),
-        members: vec![enemy_make_forsaken_warrior(); num_enemies as usize],
+        members: vec![enemy_make_forsaken_warrior(rng, f); num_enemies as usize],
         ai: Some(AIClass::new()),
         ..Default::default()
     }
@@ -155,14 +155,15 @@ pub fn make_cleric() -> PartyMember {
 }
 
 //Enemy member definitions
-pub fn enemy_make_forsaken_warrior() -> PartyMember {
+pub fn enemy_make_forsaken_warrior(rng: &mut RandomNumberGenerator, f: u32) -> PartyMember {
+    let hp_mod = rng.range(1, f as i32 + 3);
     PartyMember {
         name: String::from("Forsaken Elf"),
         class: String::from("Warrior"),
         icon: Render::new(1, ColorPair::new(PURPLE,BLACK), 255),
         abilities: vec![],
-        health: Health::new(12),
-        attack: Attack::new(1,4),
+        health: Health::new(10 + hp_mod),
+        attack: Attack::new(1,rng.range(4, min(4 + (f / 2) as i32, 8) + 1)),
         threat: Threat::new(4, 2),
         modifiers: Vec::new(),
     }
