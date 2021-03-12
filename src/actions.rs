@@ -253,7 +253,6 @@ fn run_killshot(objects: &mut Vec<Object>, target: Option<usize>, source_ids: (u
             vec
         };
         idx = health_list[0].0;
-        obj.members[idx].health.lose_life(amt);
     }
     logs.update_logs(LogMessage::new()
         .add_part(format!("{}", objects[source_ids.0].members[source_ids.1].name), ColorPair::new(objects[source_ids.0].members[source_ids.1].icon.get_render().1.fg, GREY10))
@@ -266,6 +265,7 @@ fn run_killshot(objects: &mut Vec<Object>, target: Option<usize>, source_ids: (u
 
     objects[source_ids.0].members[source_ids.1].attack.disable_attack();
     objects[source_ids.0].members[source_ids.1].threat.add_threat(30);
+    objects[source_ids.0].inc_attacks.push(TargetedAttack::new((target.unwrap(), idx), amt));
 
     return true
 }
