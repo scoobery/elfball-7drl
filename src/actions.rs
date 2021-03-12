@@ -114,14 +114,14 @@ pub fn get_ability_description(ability: Ability) -> String {
     }
 }
 
-pub fn handle_abilities(objects: &mut Vec<Object>, map: &mut Map, ability: &mut StoredAbility, rng: &mut RandomNumberGenerator, logs: &mut LogBuffer) {
+pub fn handle_abilities(objects: &mut Vec<Object>, map: &mut Map, ability: &mut StoredAbility, rng: &mut RandomNumberGenerator, logs: &mut LogBuffer, target: Option<usize>) {
     if !ability.is_on_cooldown() {
         match ability.ability {
             Ability::Taunt => run_taunt(&mut objects[ability.source_obj].members[ability.source_member], logs),
             Ability::Block => run_block(&mut objects[ability.source_obj].members[ability.source_member], logs),
             Ability::CureWounds => run_cure_wounds(&mut objects[ability.source_obj].members, ability.source_member, rng, logs, false),
             Ability::LesserCureWounds => run_cure_wounds(&mut objects[ability.source_obj].members, ability.source_member, rng, logs, true),
-            Ability::RallyingCry => {}
+            Ability::RallyingCry => run_rallying_cry(&mut objects[ability.source_obj].members, ability.source_member, logs),
             Ability::KillShot => {}
             Ability::Deforest => run_deforest(objects[ability.source_obj].pos.as_ref().unwrap(), map),
         }
@@ -150,6 +150,17 @@ fn run_block(member: &mut PartyMember, logs: &mut LogBuffer) {
         .add_part("raises their shield, blocking the enemies' blows!", ColorPair::new(WHITE, GREY10))
     );
     member.attack.disable_attack();
+}
+fn run_rallying_cry(members: &mut Vec<PartyMember>, caster: usize, logs: &mut LogBuffer) {
+    for member in members.iter_mut() {
+        member.modifiers.push(Modifier::new(ModifierEffect::PlusAttack(1), 5, false));
+    }
+
+    logs.update_logs(LogMessage::new()
+        .add_part(format!("{}", members[caster].name), ColorPair::new(members[caster].icon.get_render().1.fg, GREY10))
+        .add_part("lets out a rallying cry, bolstering the party's morale!", ColorPair::new(WHITE, GREY10))
+    );
+    members[caster].threat.add_threat(5);
 }
 fn run_cure_wounds(members: &mut Vec<PartyMember>, caster_id: usize, rng: &mut RandomNumberGenerator, logs: &mut LogBuffer, lesser: bool) {
     let health_list = {

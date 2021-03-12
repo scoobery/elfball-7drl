@@ -186,121 +186,121 @@ fn process_action(gs: &mut State, action: Actions) {
 
         Actions::UseAbility1 => {
             if 0 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[0], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[0], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbility2 => {
             if 1 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[1], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[1], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbility3 => {
             if 2 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[2], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[2], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbility4 => {
             if 3 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[3], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[3], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbility5 => {
             if 4 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[4], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[4], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbility6 => {
             if 5 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[5], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[5], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbility7 => {
             if 6 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[6], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[6], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbility8 => {
             if 7 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[7], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[7], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbility9 => {
             if 8 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[8], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[8], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbility0 => {
             if 9 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[9], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[9], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbilityS1 => {
             if 10 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[10], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[10], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbilityS2 => {
             if 11 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[11], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[11], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbilityS3 => {
             if 12 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[12], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[12], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbilityS4 => {
             if 13 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[13], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[13], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbilityS5 => {
             if 14 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[14], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[14], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbilityS6 => {
             if 15 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[15], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[15], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbilityS7 => {
             if 16 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[16], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[16], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbilityS8 => {
             if 17 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[17], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[17], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbilityS9 => {
             if 18 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[18], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[18], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
         Actions::UseAbilityS0 => {
             if 19 < gs.stored_abilities.len() {
-                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[19], &mut gs.world.rng, &mut gs.logs);
+                handle_abilities(&mut gs.world.objects, &mut gs.world.map, &mut gs.stored_abilities[19], &mut gs.world.rng, &mut gs.logs, gs.player_targets.get_current_target());
             }
             false
         },
