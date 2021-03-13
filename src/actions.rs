@@ -189,7 +189,7 @@ fn run_cleave(objects: &mut Vec<Object>, source_obj: usize, source_member: usize
         return false
     }
     {
-        let obj = &mut objects[target.unwrap()];
+        let obj = &mut objects[target_obj.unwrap()];
 
         if obj.tag != ActorTag::Enemy || obj.members.is_empty() {
             logs.update_logs(LogMessage::new()
