@@ -9,7 +9,7 @@ pub fn spawn_player(pos: Point) -> Object {
         pos: Some(pos),
         render: Some(Render::new(64, ColorPair::new(GOLD1, BLACK), 255)),
         viewshed: Some(Viewshed { range: 6, visible: Vec::new(), refresh: true }),
-        members: vec![make_guardian(), make_hunter()],
+        members: vec![make_guardian(), make_mage()],
         ..Default::default()
     }
 }
@@ -23,7 +23,7 @@ pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u3
             match roll {
                 1|2|3|4|5|6|7|8 => vec.push(enemy_make_forsaken_warrior(rng, f)),
                 9|10 => vec.push(enemy_make_forsaken_caster(rng, f)),
-                _ => panic!("WTF BOOM")
+                _ => panic!("Something's up with the dice...")
             }
         }
         vec
@@ -104,7 +104,7 @@ pub fn make_bard() -> PartyMember {
         health: Health::new(20),
         attack: Attack::new(2,3),
         threat: Threat::new(4, 2),
-        modifiers: vec![Modifier::new(ModifierEffect::PlusAttack(1), 0, true)],
+        modifiers: vec![],
     }
 }
 pub fn make_guardian() -> PartyMember {
@@ -116,7 +116,7 @@ pub fn make_guardian() -> PartyMember {
         health: Health::new(35),
         attack: Attack::new(1,6),
         threat: Threat::new(6, 3),
-        modifiers: Vec::new(),
+        modifiers: vec![Modifier::new(ModifierEffect::Block(1), 0, true)],
     }
 }
 pub fn make_barbarian() -> PartyMember {
@@ -140,7 +140,7 @@ pub fn make_woodcutter() -> PartyMember {
         health: Health::new(18),
         attack: Attack::new(1,8),
         threat: Threat::new(2, 4),
-        modifiers: Vec::new(),
+        modifiers: vec![Modifier::new(ModifierEffect::PlusAttack(1), 0, true)],
     }
 }
 pub fn make_hunter() -> PartyMember {
@@ -159,7 +159,7 @@ pub fn make_cleric() -> PartyMember {
     PartyMember {
         name: format!("{}", make_random_elf_name()),
         class: String::from("Cleric"),
-        icon: Render::new(2, ColorPair::new(WHITE,BLACK), 255),
+        icon: Render::new(2, ColorPair::new(ANTIQUEWHITE,BLACK), 255),
         abilities: vec![AbilityClass::new(Ability::CureWounds)],
         health: Health::new(10),
         attack: Attack::new(1,3),
