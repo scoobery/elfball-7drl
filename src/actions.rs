@@ -54,7 +54,7 @@ impl Object {
 //Abilities
 #[derive(Clone, Copy, PartialEq)]
 pub enum Ability {
-    Taunt, CureWounds, LesserCureWounds, RallyingCry, KillShot, Deforest, Block, MagicMissile
+    Taunt, CureWounds, LesserCureWounds, RallyingCry, KillShot, Deforest, Block, MagicMissile, PsyBolt
 }
 pub struct StoredAbility {
     pub ability: Ability,
@@ -87,7 +87,8 @@ pub fn get_ability_name(ability: Ability) -> String {
         Ability::RallyingCry => String::from("Rallying Cry"),
         Ability::KillShot => String::from("Kill Shot"),
         Ability::Deforest => String::from("Deforest"),
-        Ability::MagicMissile => String::from("Magic Missile")
+        Ability::MagicMissile => String::from("Magic Missile"),
+        Ability::PsyBolt => String::from("Psy-Bolt")
     }
 }
 
@@ -100,7 +101,8 @@ pub fn get_ability_cooldown(ability: Ability) -> i32 {
         Ability::RallyingCry => 20,
         Ability::KillShot => 30,
         Ability::Deforest => 15,
-        Ability::MagicMissile => 10
+        Ability::MagicMissile => 10,
+        Ability::PsyBolt => 3
     }
 }
 
@@ -113,7 +115,8 @@ pub fn get_ability_description(ability: Ability) -> String {
         Ability::KillShot => String::from("A ranged shot that targets the most injured member of the target party, dealing 2d6 damage."),
         Ability::Deforest => String::from("Chops down all trees directly adjacent to the party."),
         Ability::Block => String::from("Blocks 5 damage from enemy attacks for the next 2 turns."),
-        Ability::MagicMissile => String::from("An arcane projectile that strikes a random member of a target for 1d3 damage.")
+        Ability::MagicMissile => String::from("An arcane projectile that strikes a random member of a target for 1d3 damage."),
+        _ => String::from("")
     }
 }
 
@@ -127,7 +130,8 @@ pub fn handle_abilities(objects: &mut Vec<Object>, map: &mut Map, ability: &mut 
             Ability::RallyingCry => run_rallying_cry(&mut objects[ability.source_obj].members, ability.source_member, logs),
             Ability::KillShot => run_killshot(objects, target, (ability.source_obj, ability.source_member), logs, rng),
             Ability::Deforest => run_deforest(objects[ability.source_obj].pos.as_ref().unwrap(), map),
-            Ability::MagicMissile => run_magic_missile(objects, target, (ability.source_obj, ability.source_member), logs, rng)
+            Ability::MagicMissile => run_magic_missile(objects, target, (ability.source_obj, ability.source_member), logs, rng),
+            _ => false
         };
         if success { ability.set_source_on_cooldown(objects); }
     }
@@ -297,7 +301,38 @@ fn run_magic_missile(objects: &mut Vec<Object>, target: Option<usize>, source_id
 
     logs.update_logs(LogMessage::new()
         .add_part(format!("{}", objects[source_ids.0].members[source_ids.1].name), ColorPair::new(objects[source_ids.0].members[source_ids.1].icon.get_render().1.fg, GREY10))
-        .add_part("casts a Magic Missile toward", ColorPair::new(WHITE, GREY10))
+        .add_part("casts an arcane missile toward", ColorPair::new(WHITE, GREY10))
+        .add_part(format!("{}", objects[target.unwrap()].members[idx].name), ColorPair::new(objects[target.unwrap()].members[idx].icon.get_render().1.fg, GREY10))
+        .add_part("for", ColorPair::new(WHITE, GREY10))
+        .add_part(format!("{}", amt), ColorPair::new(GOLD, GREY10))
+        .add_part("damage.", ColorPair::new(WHITE, GREY10))
+    );
+
+    objects[source_ids.0].members[source_ids.1].attack.disable_attack();
+    objects[source_ids.0].members[source_ids.1].threat.add_threat(5);
+    objects[source_ids.0].inc_attacks.push(TargetedAttack::new((target.unwrap(), idx), amt));
+
+    return true
+}
+
+pub fn run_psybolt(objects: &mut Vec<Object>, target: Option<usize>, source_ids: (usize, usize), logs: &mut LogBuffer, rng: &mut RandomNumberGenerator) -> bool {
+    if target.is_none() {
+        return false
+    }
+    {
+        let obj = &mut objects[target.unwrap()];
+
+        if obj.tag != ActorTag::Player || obj.members.is_empty() {
+            return false
+        }
+    }
+
+    let idx = rng.range(0,objects[target.unwrap()].members.len());
+    let amt = rng.roll_dice(1, 3);
+
+    logs.update_logs(LogMessage::new()
+        .add_part(format!("{}", objects[source_ids.0].members[source_ids.1].name), ColorPair::new(objects[source_ids.0].members[source_ids.1].icon.get_render().1.fg, GREY10))
+        .add_part("casts a psychic bolt toward", ColorPair::new(WHITE, GREY10))
         .add_part(format!("{}", objects[target.unwrap()].members[idx].name), ColorPair::new(objects[target.unwrap()].members[idx].icon.get_render().1.fg, GREY10))
         .add_part("for", ColorPair::new(WHITE, GREY10))
         .add_part(format!("{}", amt), ColorPair::new(GOLD, GREY10))

@@ -15,7 +15,20 @@ pub fn spawn_player(pos: Point) -> Object {
 }
 
 pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u32) -> Object {
-    let num_enemies = rng.range(f, min(f + 2, 5));
+    let num_enemies = rng.range(f, min(f + 1, 5));
+    let band_vec = {
+        let mut vec = Vec::new();
+        for _ in 0..=num_enemies {
+            let roll = rng.roll_dice(1,10);
+            match roll {
+                1|2|3|4|5|6|7|8 => vec.push(enemy_make_forsaken_warrior(rng, f)),
+                9|10 => vec.push(enemy_make_forsaken_caster(rng, f)),
+                _ => panic!("WTF BOOM")
+            }
+        }
+        vec
+    };
+
     Object {
         name: String::from("band of Forsaken Warriors"),
         floor: f,
@@ -23,7 +36,7 @@ pub fn spawn_band_of_forsaken(rng: &mut RandomNumberGenerator, pos: Point, f: u3
         pos: Some(pos),
         render: Some(Render::new(1, ColorPair::new(PURPLE,BLACK), 255)),
         viewshed: Some(Viewshed { range: 6, visible: Vec::new(), refresh: true }),
-        members: vec![enemy_make_forsaken_warrior(rng, f); num_enemies as usize],
+        members: band_vec,
         ai: Some(AIClass::new()),
         ..Default::default()
     }
@@ -178,6 +191,19 @@ pub fn enemy_make_forsaken_warrior(rng: &mut RandomNumberGenerator, f: u32) -> P
         health: Health::new(10 + hp_mod),
         attack: Attack::new(1,rng.range(4, min(4 + (f / 2) as i32, 8) + 1)),
         threat: Threat::new(4, 2),
+        modifiers: Vec::new(),
+    }
+}
+pub fn enemy_make_forsaken_caster(rng: &mut RandomNumberGenerator, f: u32) -> PartyMember {
+    let hp_mod = rng.range(1, f as i32 + 3);
+    PartyMember {
+        name: String::from("Dark Magus"),
+        class: String::from("Psychomancer"),
+        icon: Render::new(1, ColorPair::new(BLUE_VIOLET,BLACK), 255),
+        abilities: vec![AbilityClass::new(Ability::PsyBolt)],
+        health: Health::new(5 + hp_mod),
+        attack: Attack::new(1,rng.range(2, min(2 + (f / 2) as i32, 4) + 1)),
+        threat: Threat::new(2, 0),
         modifiers: Vec::new(),
     }
 }
