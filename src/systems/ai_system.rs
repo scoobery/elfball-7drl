@@ -94,6 +94,14 @@ fn run_ai_abilities(objects: &mut Vec<Object>, enemy_id: usize, logs: &mut LogBu
             }
         }
     }
+    {
+        if let Some(tgt) = target {
+            if let Some(tgt_pos) = objects[tgt].pos {
+                let visible = objects[enemy_id].viewshed.as_ref().unwrap().visible.to_vec();
+                if !visible.contains(&tgt_pos) { return }
+            }
+        }
+    }
     for a in ability_vec.iter() {
         let mut success = false;
         {
