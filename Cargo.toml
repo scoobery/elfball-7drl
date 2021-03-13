@@ -8,3 +8,6 @@ edition = "2018"
 
 [dependencies]
 bracket-lib = { git = "https://github.com/thebracket/bracket-lib.git" }
+
+[profile.release]
+lto = "thin"

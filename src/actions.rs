@@ -188,6 +188,16 @@ fn run_cleave(objects: &mut Vec<Object>, source_obj: usize, source_member: usize
         );
         return false
     }
+    {
+        let obj = &mut objects[target.unwrap()];
+
+        if obj.tag != ActorTag::Enemy || obj.members.is_empty() {
+            logs.update_logs(LogMessage::new()
+                .add_part("Why would you want to do that?", ColorPair::new(WHITE, GREY10))
+            );
+            return false
+        }
+    }
 
     let target_position = objects[target_obj.unwrap()].pos.as_ref().unwrap().clone();
     let adjacencies = objects[source_obj].pos.as_ref().unwrap().clone().get_neighbors();
