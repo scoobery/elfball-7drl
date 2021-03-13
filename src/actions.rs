@@ -54,7 +54,7 @@ impl Object {
 //Abilities
 #[derive(Clone, Copy, PartialEq)]
 pub enum Ability {
-    Taunt, CureWounds, LesserCureWounds, RallyingCry, KillShot, Deforest, Block, MagicMissile, PsyBolt
+    Taunt, CureWounds, LesserCureWounds, RallyingCry, KillShot, Deforest, Block, MagicMissile, LesserMagicMissile, PsyBolt, Cleave
 }
 pub struct StoredAbility {
     pub ability: Ability,
@@ -88,6 +88,8 @@ pub fn get_ability_name(ability: Ability) -> String {
         Ability::KillShot => String::from("Kill Shot"),
         Ability::Deforest => String::from("Deforest"),
         Ability::MagicMissile => String::from("Magic Missile"),
+        Ability::LesserMagicMissile => String::from("Lesser Missile"),
+        Ability::Cleave => String::from("Cleave"),
         Ability::PsyBolt => String::from("Psy-Bolt")
     }
 }
@@ -102,6 +104,8 @@ pub fn get_ability_cooldown(ability: Ability) -> i32 {
         Ability::KillShot => 30,
         Ability::Deforest => 15,
         Ability::MagicMissile => 10,
+        Ability::LesserMagicMissile => 20,
+        Ability::Cleave => 15,
         Ability::PsyBolt => 3
     }
 }
@@ -115,7 +119,8 @@ pub fn get_ability_description(ability: Ability) -> String {
         Ability::KillShot => String::from("A ranged shot that targets the most injured member of the target party, dealing 2d6 damage."),
         Ability::Deforest => String::from("Chops down all trees directly adjacent to the party."),
         Ability::Block => String::from("Blocks 5 damage from enemy attacks for the next 2 turns."),
-        Ability::MagicMissile => String::from("An arcane projectile that strikes a random member of a target for 1d3 damage."),
+        Ability::MagicMissile | Ability::LesserMagicMissile => String::from("An arcane projectile that strikes a random member of a target for 1d3 damage."),
+        Ability::Cleave => String::from("Attacks each member of a target within melee range."),
         _ => String::from("")
     }
 }
@@ -130,7 +135,8 @@ pub fn handle_abilities(objects: &mut Vec<Object>, map: &mut Map, ability: &mut 
             Ability::RallyingCry => run_rallying_cry(&mut objects[ability.source_obj].members, ability.source_member, logs),
             Ability::KillShot => run_killshot(objects, target, (ability.source_obj, ability.source_member), logs, rng),
             Ability::Deforest => run_deforest(objects[ability.source_obj].pos.as_ref().unwrap(), map),
-            Ability::MagicMissile => run_magic_missile(objects, target, (ability.source_obj, ability.source_member), logs, rng),
+            Ability::MagicMissile | Ability::LesserMagicMissile => run_magic_missile(objects, target, (ability.source_obj, ability.source_member), logs, rng),
+            Ability::Cleave => run_cleave(objects, ability.source_obj, ability.source_member, target, logs, rng),
             _ => false
         };
         if success { ability.set_source_on_cooldown(objects); }
@@ -145,7 +151,8 @@ pub fn handle_abilities(objects: &mut Vec<Object>, map: &mut Map, ability: &mut 
 }
 
 fn run_taunt(member: &mut PartyMember, logs: &mut LogBuffer) -> bool {
-    member.modifiers.push(Modifier::new(ModifierEffect::PlusThreat(10), 5, false));
+    member.modifiers.push(Modifier::new(ModifierEffect::PlusThreat(5), 5, false));
+    member.threat.add_threat(15);
     logs.update_logs(LogMessage::new()
         .add_part(format!("{}",member.name), ColorPair::new(member.icon.get_render().1.fg, GREY10))
         .add_part("lets out a threatening shout, taunting enemies to attack them!", ColorPair::new(WHITE, GREY10))
@@ -174,6 +181,50 @@ fn run_rallying_cry(members: &mut Vec<PartyMember>, caster: usize, logs: &mut Lo
 
     return true
 }
+fn run_cleave(objects: &mut Vec<Object>, source_obj: usize, source_member: usize, target_obj: Option<usize>, logs: &mut LogBuffer, rng: &mut RandomNumberGenerator) -> bool {
+    if target_obj.is_none() {
+        logs.update_logs(LogMessage::new()
+            .add_part("That ability needs a target!", ColorPair::new(WHITE, GREY10))
+        );
+        return false
+    }
+
+    let target_position = objects[target_obj.unwrap()].pos.as_ref().unwrap().clone();
+    let adjacencies = objects[source_obj].pos.as_ref().unwrap().clone().get_neighbors();
+    if !adjacencies.contains(&target_position) {
+        logs.update_logs(LogMessage::new()
+            .add_part("Your target must be in melee range to use this ability!", ColorPair::new(WHITE, GREY10))
+        );
+        return false
+    }
+
+    let idxlist = {
+        let enemy_members = &mut objects[target_obj.unwrap()].members;
+        let mut vec = Vec::new();
+        for (i, _) in enemy_members.iter().enumerate() { vec.push(i); }
+        vec
+    };
+
+    let player = &mut objects[source_obj];
+    let amt = player.members[source_member].attack.roll_for_damage(rng);
+    for idx in idxlist.iter() {
+        player.inc_attacks.push(TargetedAttack::new((target_obj.unwrap(), *idx), amt));
+    }
+    player.members[source_member].attack.disable_attack();
+    player.members[source_member].threat.add_threat(15 * idxlist.len() as u32);
+
+    logs.update_logs(LogMessage::new()
+        .add_part(format!("{}", player.members[source_member].name), ColorPair::new(player.members[source_member].icon.get_render().1.fg, GREY10))
+        .add_part("attacks each unit in", ColorPair::new(WHITE, GREY10))
+        .add_part(format!("{}", objects[target_obj.unwrap()].name.clone()), ColorPair::new(objects[target_obj.unwrap()].render.as_ref().unwrap().get_render().1.fg.clone(), GREY10))
+        .add_part("for", ColorPair::new(WHITE, GREY10))
+        .add_part(format!("{}", amt), ColorPair::new(GOLD, GREY10))
+        .add_part("damage.", ColorPair::new(WHITE, GREY10))
+    );
+
+    return true
+}
+
 fn run_cure_wounds(members: &mut Vec<PartyMember>, caster_id: usize, rng: &mut RandomNumberGenerator, logs: &mut LogBuffer, lesser: bool) -> bool {
     let health_list = {
         let mut vec = members.iter().enumerate()
